@@ -49,7 +49,7 @@ module SpreadsheetLoanGenerator
         range: range,
         values: [columns] +
           duration.times.map.with_index do |_, index|
-            line(index: index, loan: loan)
+            row(term: index + 1, loan: loan) # indexs start at 0, terms at 1
           end
       )
       result = service_wrapper.service.update_spreadsheet_value(

@@ -4,41 +4,41 @@ module SpreadsheetLoanGenerator
 
     included do
       # use method missing defined in spreadsheet concerns a lot
-      
-      def remaining_capital_start_formula(index:, amount:)
+
+      def remaining_capital_start_formula(line:, amount:)
         base = excel_float(float: amount)
 
-        return base if index == 2
+        return base if line == 2
 
-        "=#{base} - #{total_paid_capital_end_of_period(index - 1)}"
+        "=#{base} - #{total_paid_capital_end_of_period(line - 1)}"
       end
 
-      def remaining_capital_end_formula(index:, amount:)
+      def remaining_capital_end_formula(line:, amount:)
         base = excel_float(float: amount)
 
-        "=#{base} - #{total_paid_capital_end_of_period(index)}"
+        "=#{base} - #{total_paid_capital_end_of_period(line)}"
       end
 
-      def period_calculated_interests_formula(index:)
-        "=#{remaining_capital_start(index)} * #{period_rate(index)}"
+      def period_calculated_interests_formula(line:)
+        "=#{remaining_capital_start(line)} * #{period_rate(line)}"
       end
 
-      def period_accrued_delta_formula(index:)
-        return excel_float(float: 0.0) if index == 2
+      def period_accrued_delta_formula(line:)
+        return excel_float(float: 0.0) if line == 2
 
-        "=#{accrued_delta(index - 1)} + #{delta(index)}"
+        "=#{accrued_delta(line - 1)} + #{delta(line)}"
       end
 
-      def total_paid_capital_end_of_period_formula(index:)
-        return "=#{period_capital(index)}" if index == 2
+      def total_paid_capital_end_of_period_formula(line:)
+        return "=#{period_capital(line)}" if line == 2
 
-        "=SOMME(#{column_range(column: period_capital, upto: index)})"
+        "=SOMME(#{column_range(column: period_capital, upto: line)})"
       end
 
-      def total_paid_interests_end_of_period_formula(index:)
-        return "=#{period_interests(index)}" if index == 2
+      def total_paid_interests_end_of_period_formula(line:)
+        return "=#{period_interests(line)}" if line == 2
 
-        "=SOMME(#{column_range(column: period_interests, upto: index)})"
+        "=SOMME(#{column_range(column: period_interests, upto: line)})"
       end
 
       def period_rate_formula(rate:, period_duration:, type: :simple)
@@ -50,39 +50,38 @@ module SpreadsheetLoanGenerator
         end
       end
 
-      def period_interests_formula(index:, duration:, amount:)
-        "=-IPMT(#{period_rate(index)}; #{column_letter[:index]}#{index}; #{duration}; #{excel_float(float: amount)})"
+      def period_interests_formula(line:, duration:, amount:)
+        "=-IPMT(#{period_rate(line)}; #{column_letter[:index]}#{line}; #{duration}; #{excel_float(float: amount)})"
       end
 
-      def period_capital_formula(index:, duration:, amount:)
-        "=-PPMT(#{period_rate(index)}; #{column_letter[:index]}#{index}; #{duration}; #{excel_float(float: amount)})"
+      def period_capital_formula(line:, duration:, amount:)
+        "=-PPMT(#{period_rate(line)}; #{column_letter[:index]}#{line}; #{duration}; #{excel_float(float: amount)})"
       end
 
-      def period_total_formula(index:, duration:, amount:, type: :standard)
+      def period_total_formula(line:, duration:, amount:, type: :standard)
         if type == :standard
-          "=-PMT(#{period_rate(index)}; #{duration}; #{excel_float(float: amount)})"
+          "=-PMT(#{period_rate(line)}; #{duration}; #{excel_float(float: amount)})"
         else
-          "=#{period_capital(index)} + #{period_interests(index)}"
+          "=#{period_capital(line)} + #{period_interests(line)}"
         end
       end
 
-      def line(index:, loan:)
-        term = index + 1
-
+      def row(term:, loan:)
+        line = term + 1 # first term is on second line
         [
           term,
           loan.due_on + (term * loan.period_duration).months,
-          remaining_capital_start_formula(index: index_to_line(index: term), amount: loan.amount),
-          remaining_capital_end_formula(index: index_to_line(index: term), amount: loan.amount),
-          period_calculated_interests_formula(index: index_to_line(index: term)),
+          remaining_capital_start_formula(line: line, amount: loan.amount),
+          remaining_capital_end_formula(line: line, amount: loan.amount),
+          period_calculated_interests_formula(line: line),
           '',
-          period_accrued_delta_formula(index: index_to_line(index: term)),
+          period_accrued_delta_formula(line: line),
           'amount_to_add',
-          period_interests_formula(index: index_to_line(index: term), duration: loan.duration, amount: loan.amount),
-          period_capital_formula(index: index_to_line(index: term), duration: loan.duration, amount: loan.amount),
-          total_paid_capital_end_of_period_formula(index: index_to_line(index: term)),
-          total_paid_interests_end_of_period_formula(index: index_to_line(index: term)),
-          period_total_formula(index: index_to_line(index: term), duration: loan.duration, amount: loan.amount),
+          period_interests_formula(line: line, duration: loan.duration, amount: loan.amount),
+          period_capital_formula(line: line, duration: loan.duration, amount: loan.amount),
+          total_paid_capital_end_of_period_formula(line: line),
+          total_paid_interests_end_of_period_formula(line: line),
+          period_total_formula(line: line, duration: loan.duration, amount: loan.amount),
           'capitalized_interests_start',
           'capitalized_interests_end',
           period_rate_formula(rate: loan.rate, period_duration: loan.period_duration)
