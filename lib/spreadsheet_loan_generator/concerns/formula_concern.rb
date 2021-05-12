@@ -20,7 +20,7 @@ module SpreadsheetLoanGenerator
       end
 
       def period_calculated_interests_formula(line:)
-        "=#{remaining_capital_start(line)} * #{period_rate(line)}"
+        "=(#{remaining_capital_start(line)} + #{capitalized_interests_start(line)}) * #{period_rate(line)}"
       end
 
       def period_accrued_delta_formula(line:)
@@ -30,9 +30,9 @@ module SpreadsheetLoanGenerator
       end
 
       def total_paid_capital_end_of_period_formula(line:)
-        return "=#{period_capital(line)}" if line == 2
+        return "=#{period_capital(line)} - #{period_reimbursed_capitalized_interests(line)}" if line == 2
 
-        "=SOMME(#{column_range(column: period_capital, upto: line)})"
+        "=SOMME(#{column_range(column: period_capital, upto: line)}) - SOMME(#{column_range(column: period_reimbursed_capitalized_interests, upto: line)})"
       end
 
       def total_paid_interests_end_of_period_formula(line:)
@@ -51,18 +51,64 @@ module SpreadsheetLoanGenerator
       end
 
       def period_interests_formula(line:)
-        "=-IPMT(#{period_rate(line)}; #{column_letter[:index]}#{line}; #{loan.duration}; #{excel_float(float: loan.amount)})"
+        term = line - 1
+        if term <= loan.deferred_and_capitalized
+          excel_float(float: 0.0)
+        elsif term <= loan.deferred_and_capitalized + loan.deferred
+          "=#{period_calculated_interests(line)}"
+        else
+          "=-IPMT(#{standard_params(line: line)})"
+        end
       end
 
       def period_capital_formula(line:)
-        "=-PPMT(#{period_rate(line)}; #{column_letter[:index]}#{line}; #{loan.duration}; #{excel_float(float: loan.amount)})"
+        term = line - 1
+        if term <= loan.deferred_and_capitalized
+          excel_float(float: 0.0)
+        elsif term <= loan.deferred_and_capitalized + loan.deferred
+          excel_float(float: 0.0)
+        else
+          "=-PPMT(#{standard_params(line: line)})"
+        end
+      end
+
+      def standard_params(line:)
+        if loan.deferred_and_capitalized.zero?
+          amount = excel_float(float: loan.amount)
+          term_cell = "#{column_letter[:index]}#{line}"
+        else
+          amount = "#{capitalized_interests_end(loan.deferred_and_capitalized + 1)} + #{excel_float(float: loan.amount)}"
+          term_cell = "#{column_letter[:index]}#{line} - #{loan.total_deferred_duration}"
+        end
+
+        "#{period_rate(line)};#{term_cell};#{loan.non_deferred_duration};#{amount}"
       end
 
       def period_total_formula(line:)
-        if loan.type == :standard
-          "=-PMT(#{period_rate(line)}; #{loan.duration}; #{excel_float(float: loan.amount)})"
+        "=#{period_capital(line)} + #{period_interests(line)}"
+      end
+
+      def capitalized_interests_start_formula(line:)
+        return excel_float(float: 0.0) if line == 2
+
+        "=#{capitalized_interests_end(line - 1)}"
+      end
+
+      def period_reimbursed_capitalized_interests_formula(line:)
+        term = line - 1
+        if term <= loan.deferred_and_capitalized + loan.deferred
+          excel_float(float: 0.0)
         else
-          "=#{period_capital(line)} + #{period_interests(line)}"
+          "=MIN(#{period_capital(line)}; #{capitalized_interests_start(line)})"
+        end
+      end
+
+      def capitalized_interests_end_formula(line:)
+        term = line - 1
+        if term <= loan.deferred_and_capitalized
+          "=#{capitalized_interests_start(line)} + #{period_calculated_interests(line)}"
+        else
+          "=#{capitalized_interests_start(line)} - #{period_reimbursed_capitalized_interests(line)}"
         end
       end
 
@@ -82,9 +128,10 @@ module SpreadsheetLoanGenerator
           total_paid_capital_end_of_period_formula(line: line),
           total_paid_interests_end_of_period_formula(line: line),
           period_total_formula(line: line),
-          'capitalized_interests_start',
-          'capitalized_interests_end',
-          period_rate_formula
+          capitalized_interests_start_formula(line: line),
+          capitalized_interests_end_formula(line: line),
+          period_rate_formula,
+          period_reimbursed_capitalized_interests_formula(line: line)
         ]
       end
     end

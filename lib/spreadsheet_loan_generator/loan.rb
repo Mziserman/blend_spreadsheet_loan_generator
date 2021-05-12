@@ -30,5 +30,13 @@ module SpreadsheetLoanGenerator
       @type = type
       @interests_type = interests_type
     end
+
+    def non_deferred_duration
+      duration - total_deferred_duration
+    end
+
+    def total_deferred_duration
+      deferred_and_capitalized + deferred
+    end
   end
 end

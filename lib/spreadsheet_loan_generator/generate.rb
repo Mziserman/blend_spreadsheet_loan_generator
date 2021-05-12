@@ -45,7 +45,7 @@ module SpreadsheetLoanGenerator
         fields: 'spreadsheetId'
       )
 
-      range = "A1:P#{duration + 1}"
+      range = "A1:Q#{duration + 1}"
 
       value_range_object = Google::Apis::SheetsV4::ValueRange.new(
         range: range,
