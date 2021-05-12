@@ -3,6 +3,8 @@ module SpreadsheetLoanGenerator
     include SpreadsheetConcern
     include FormulaConcern
 
+    attr_accessor :loan
+
     desc "Generate spreadsheet"
 
     argument :amount, type: :float, required: true, desc: 'amount borrowed'
@@ -22,7 +24,7 @@ module SpreadsheetLoanGenerator
       rate = rate.to_f
 
       service_wrapper = ServiceWrapper.new
-      loan = Loan.new(
+      @loan = Loan.new(
         amount: amount,
         duration: duration,
         period_duration: options.fetch(:period_duration),
@@ -49,7 +51,7 @@ module SpreadsheetLoanGenerator
         range: range,
         values: [columns] +
           duration.times.map.with_index do |_, index|
-            row(term: index + 1, loan: loan) # indexs start at 0, terms at 1
+            row(term: index + 1) # indexs start at 0, terms at 1
           end
       )
       result = service_wrapper.service.update_spreadsheet_value(
