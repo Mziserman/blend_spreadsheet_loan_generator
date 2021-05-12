@@ -1,4 +1,7 @@
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
-gem 'google-api-client'
-gem 'activesupport'
+# Specify your gem's dependencies in spreadsheet_loan_generator.gemspec
+gemspec
+
+gem 'rake', '~> 12.0'
+gem 'rspec', '~> 3.0'

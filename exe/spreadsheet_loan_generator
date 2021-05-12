@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require 'spreadsheet_loan_generator'
+
+Dry::CLI.new(SpreadsheetLoanGenerator).call
