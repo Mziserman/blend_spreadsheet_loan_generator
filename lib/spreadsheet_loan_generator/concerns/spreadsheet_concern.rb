@@ -58,6 +58,17 @@ module SpreadsheetLoanGenerator
       def excel_float(float:)
         float.to_s.gsub('.', ',')
       end
+
+      # used heavily in formula concern
+      def respond_to_missing?(method_name, include_private = false)
+        columns.include?(method_name.to_s) || super
+      end
+
+      def method_missing(method_name, *args, **kwargs)
+        return super unless respond_to_missing?(method_name)
+
+        "#{column_letter[method_name]}#{kwargs.fetch(:index, args.first)}"
+      end
     end
   end
 end

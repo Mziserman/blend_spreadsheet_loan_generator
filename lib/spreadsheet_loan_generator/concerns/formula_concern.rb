@@ -3,40 +3,42 @@ module SpreadsheetLoanGenerator
     extend ActiveSupport::Concern
 
     included do
+      # use method missing defined in spreadsheet concerns a lot
+      
       def remaining_capital_start_formula(index:, amount:)
         base = excel_float(float: amount)
 
         return base if index == 2
 
-        "=#{base} - #{column_letter[:total_paid_capital_end_of_period]}#{index - 1}"
+        "=#{base} - #{total_paid_capital_end_of_period(index - 1)}"
       end
 
       def remaining_capital_end_formula(index:, amount:)
         base = excel_float(float: amount)
 
-        "=#{base} - #{column_letter[:total_paid_capital_end_of_period]}#{index}"
+        "=#{base} - #{total_paid_capital_end_of_period(index)}"
       end
 
       def period_calculated_interests_formula(index:)
-        "=#{column_letter[:remaining_capital_start]}#{index} * #{column_letter[:period_rate]}#{index}"
+        "=#{remaining_capital_start(index)} * #{period_rate(index)}"
       end
 
       def period_accrued_delta_formula(index:)
         return excel_float(float: 0.0) if index == 2
 
-        "=#{column_letter[:accrued_delta]}#{index - 1} + #{column_letter[:delta]}#{index}"
+        "=#{accrued_delta(index - 1)} + #{delta(index)}"
       end
 
       def total_paid_capital_end_of_period_formula(index:)
-        return "=#{column_letter[:period_capital]}2" if index == 2
+        return "=#{period_capital(index)}" if index == 2
 
-        "=SOMME(#{column_range(column: column_letter[:period_capital], upto: index)})"
+        "=SOMME(#{column_range(column: period_capital, upto: index)})"
       end
 
       def total_paid_interests_end_of_period_formula(index:)
-        return "=#{column_letter[:period_interests]}2" if index == 2
+        return "=#{period_interests(index)}" if index == 2
 
-        "=SOMME(#{column_range(column: column_letter[:period_interests], upto: index)})"
+        "=SOMME(#{column_range(column: period_interests, upto: index)})"
       end
 
       def period_rate_formula(rate:, period_duration:, type: :simple)
@@ -49,23 +51,24 @@ module SpreadsheetLoanGenerator
       end
 
       def period_interests_formula(index:, duration:, amount:)
-        "=-IPMT(#{column_letter[:period_rate]}#{index}; #{column_letter[:index]}#{index}; #{duration}; #{excel_float(float: amount)})"
+        "=-IPMT(#{period_rate(index)}; #{column_letter[:index]}#{index}; #{duration}; #{excel_float(float: amount)})"
       end
 
       def period_capital_formula(index:, duration:, amount:)
-        "=-PPMT(#{column_letter[:period_rate]}#{index}; #{column_letter[:index]}#{index}; #{duration}; #{excel_float(float: amount)})"
+        "=-PPMT(#{period_rate(index)}; #{column_letter[:index]}#{index}; #{duration}; #{excel_float(float: amount)})"
       end
 
       def period_total_formula(index:, duration:, amount:, type: :standard)
         if type == :standard
-          "=-PMT(#{column_letter[:period_rate]}#{index}; #{duration}; #{excel_float(float: amount)})"
+          "=-PMT(#{period_rate(index)}; #{duration}; #{excel_float(float: amount)})"
         else
-          "=#{column_letter[:period_capital]}#{index} + #{column_letter[:period_interests]}#{index}"
+          "=#{period_capital(index)} + #{period_interests(index)}"
         end
       end
 
       def line(index:, loan:)
         term = index + 1
+
         [
           term,
           loan.due_on + (term * loan.period_duration).months,
