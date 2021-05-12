@@ -1,12 +1,7 @@
-require 'active_support/all'
-require "google/apis/sheets_v4"
-require "googleauth"
-require "googleauth/stores/file_token_store"
-require "fileutils"
-
 module SpreadsheetLoanGenerator
   class Generate < Dry::CLI::Command
     include SpreadsheetConcern
+    include FormulaConcern
 
     desc "Generate spreadsheet"
 

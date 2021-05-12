@@ -1,5 +1,11 @@
-require 'dry/cli'
 require 'bundler/setup'
+require 'dry/cli'
+require 'active_support/all'
+require 'google/apis/sheets_v4'
+require 'googleauth'
+require 'googleauth/stores/file_token_store'
+require 'fileutils'
+
 
 require 'spreadsheet_loan_generator/version'
 
@@ -9,6 +15,7 @@ module SpreadsheetLoanGenerator
   extend Dry::CLI::Registry
 
   autoload :SpreadsheetConcern, 'spreadsheet_loan_generator/concerns/spreadsheet_concern'
+  autoload :FormulaConcern, 'spreadsheet_loan_generator/concerns/formula_concern'
   autoload :ServiceWrapper, 'spreadsheet_loan_generator/service_wrapper'
   autoload :Loan, 'spreadsheet_loan_generator/loan'
 
