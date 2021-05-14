@@ -30,5 +30,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'activesupport'
   spec.add_runtime_dependency 'dry-cli', '0.6'
   spec.add_runtime_dependency 'google-api-client'
+  spec.add_runtime_dependency 'google_drive'
   spec.add_development_dependency 'pry'
 end
