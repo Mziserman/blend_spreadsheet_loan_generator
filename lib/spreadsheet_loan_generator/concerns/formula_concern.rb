@@ -62,7 +62,7 @@ module SpreadsheetLoanGenerator
       end
 
       def period_capital_formula(line:)
-        "=ARRONDI(#{period_calculated_capital(line)} - #{period_reimbursed_capitalized_interests(line)}; 2)"
+        "=#{period_calculated_capital(line)} - #{period_reimbursed_capitalized_interests(line)}"
       end
 
       def standard_params(line:)
@@ -84,7 +84,7 @@ module SpreadsheetLoanGenerator
         elsif term <= loan.deferred_and_capitalized + loan.deferred
           excel_float(float: 0.0)
         else
-          "=ARRONDI(-PPMT(#{standard_params(line: line)}); 2)"
+          "=-PPMT(#{standard_params(line: line)})"
         end
       end
 

@@ -1,5 +1,6 @@
 require 'bundler/setup'
 require 'dry/cli'
+require 'google_drive'
 require 'active_support/all'
 require 'google/apis/sheets_v4'
 require 'googleauth'

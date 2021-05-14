@@ -23,7 +23,10 @@ module SpreadsheetLoanGenerator
       duration = duration.to_i
       rate = rate.to_f
 
-      service_wrapper = ServiceWrapper.new
+      session = GoogleDrive::Session.from_config('config.json')
+      spreadsheet = session.create_spreadsheet('new test')
+      worksheet = spreadsheet.worksheets.first
+
       @loan = Loan.new(
         amount: amount,
         duration: duration,
@@ -36,31 +39,19 @@ module SpreadsheetLoanGenerator
         interests_type: options.fetch(:interests_type)
       )
 
-      spreadsheet = service_wrapper.service.create_spreadsheet(
-        {
-          properties: {
-            title: 'test'
-          }
-        },
-        fields: 'spreadsheetId'
-      )
+      timetable = [columns]
+      timetable += duration.times.map.with_index do |_, index|
+        row(term: index + 1) # indexs start at 0, terms at 1
+      end
 
-      range = "A1:R#{duration + 1}"
+      timetable.each.with_index do |row, line|
+        row.each.with_index do |formula, column|
+          worksheet[line + 1, column + 1] = formula
+        end
+      end
 
-      value_range_object = Google::Apis::SheetsV4::ValueRange.new(
-        range: range,
-        values: [columns] +
-          duration.times.map.with_index do |_, index|
-            row(term: index + 1) # indexs start at 0, terms at 1
-          end
-      )
-      result = service_wrapper.service.update_spreadsheet_value(
-        spreadsheet.spreadsheet_id,
-        range,
-        value_range_object,
-        value_input_option: 'USER_ENTERED'
-      )
-      puts "#{result.updated_cells} cells updated."
+      worksheet.save
+      puts worksheet.human_url
     end
   end
 end
