@@ -14,6 +14,7 @@ module SpreadsheetLoanGenerator
 
   autoload :SpreadsheetConcern, 'spreadsheet_loan_generator/concerns/spreadsheet_concern'
   autoload :FormulaConcern, 'spreadsheet_loan_generator/concerns/formula_concern'
+  autoload :CsvConcern, 'spreadsheet_loan_generator/concerns/csv_concern'
   autoload :ServiceWrapper, 'spreadsheet_loan_generator/service_wrapper'
   autoload :Loan, 'spreadsheet_loan_generator/loan'
 

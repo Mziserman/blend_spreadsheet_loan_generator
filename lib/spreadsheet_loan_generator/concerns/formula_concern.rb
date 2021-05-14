@@ -5,6 +5,15 @@ module SpreadsheetLoanGenerator
     included do
       # use method missing defined in spreadsheet concerns a lot
 
+      def index_formula(line:)
+        line - 1
+      end
+
+      def due_on_formula(line:)
+        term = line - 1
+        loan.due_on + (term * loan.period_duration).months
+      end
+
       def remaining_capital_start_formula(line:)
         base = excel_float(float: loan.amount)
 
@@ -23,7 +32,7 @@ module SpreadsheetLoanGenerator
         "=ARRONDI((#{remaining_capital_start(line)} + #{capitalized_interests_start(line)}) * #{period_rate(line)}; 14)"
       end
 
-      def period_accrued_delta_formula(line:)
+      def accrued_delta_formula(line:)
         return excel_float(float: 0.0) if line == 2
 
         "=ARRONDI(#{accrued_delta(line - 1)} + #{delta(line)}; 14)"
@@ -41,7 +50,7 @@ module SpreadsheetLoanGenerator
         "=ARRONDI(SOMME(#{column_range(column: period_interests, upto: line)}); 2)"
       end
 
-      def period_rate_formula
+      def period_rate_formula(*)
         case loan.interests_type
         when 'normal'
           "=TAUX.NOMINAL(#{excel_float(float: loan.rate)};#{excel_float(float: 12.0 / loan.period_duration)})"
@@ -93,7 +102,7 @@ module SpreadsheetLoanGenerator
       end
 
       def period_total_formula(line:)
-        "=ARRONDI(#{period_capital(line)} + #{period_interests(line)}; 2)"
+        "=ARRONDI(#{period_capital(line)} + #{period_interests(line)} + #{period_reimbursed_capitalized_interests(line)}; 2)"
       end
 
       def capitalized_interests_start_formula(line:)
@@ -134,28 +143,15 @@ module SpreadsheetLoanGenerator
         "=TRONQUE(#{accrued_delta(line)}; 2)"
       end
 
-      def row(term:)
-        line = term + 1 # first term is on second line
-        [
-          term,
-          loan.due_on + (term * loan.period_duration).months,
-          remaining_capital_start_formula(line: line),
-          remaining_capital_end_formula(line: line),
-          period_calculated_interests_formula(line: line),
-          delta_formula(line: line),
-          period_accrued_delta_formula(line: line),
-          amount_to_add_formula(line: line),
-          period_interests_formula(line: line),
-          period_capital_formula(line: line),
-          total_paid_capital_end_of_period_formula(line: line),
-          total_paid_interests_end_of_period_formula(line: line),
-          period_total_formula(line: line),
-          capitalized_interests_start_formula(line: line),
-          capitalized_interests_end_formula(line: line),
-          period_rate_formula,
-          period_reimbursed_capitalized_interests_formula(line: line),
-          period_calculated_capital_formula(line: line)
-        ]
+      def apply_formulas(worksheet:)
+        columns.each.with_index do |title, column|
+          worksheet[1, column + 1] = title
+        end
+        loan.duration.times do |line|
+          columns.each.with_index do |title, column|
+            worksheet[line + 2, column + 1] = send("#{title}_formula", line: line + 2)
+          end
+        end
       end
     end
   end

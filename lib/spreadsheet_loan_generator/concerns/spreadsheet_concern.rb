@@ -75,6 +75,17 @@ module SpreadsheetLoanGenerator
         }
       end
 
+      def apply_formats(worksheet:)
+        precise_columns.each do |column|
+          index = columns.index(column) + 1
+          worksheet.set_number_format(1, index, loan.duration + 1, 1, '0.000000000000000')
+        end
+        currency_columns.each do |column|
+          index = columns.index(column) + 1
+          worksheet.set_number_format(1, index, loan.duration + 1, 1, '0.00')
+        end
+      end
+
       def column_range(column: 'A', upto: , exclude_head: true)
         start_line = exclude_head ? 2 : 1
 

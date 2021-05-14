@@ -2,6 +2,7 @@ module SpreadsheetLoanGenerator
   class Generate < Dry::CLI::Command
     include SpreadsheetConcern
     include FormulaConcern
+    include CsvConcern
 
     attr_accessor :loan
 
@@ -37,46 +38,13 @@ module SpreadsheetLoanGenerator
         interests_type: options.fetch(:interests_type)
       )
 
-      timetable = [columns]
-      timetable += loan.duration.times.map.with_index do |_, index|
-        row(term: index + 1) # indexs start at 0, terms at 1
-      end
+      apply_formulas(worksheet: worksheet)
+      apply_formats(worksheet: worksheet)
 
-      timetable.each.with_index do |row, line|
-        row.each.with_index do |formula, column|
-          worksheet[line + 1, column + 1] = formula
-        end
-      end
-      precise_columns.each do |column|
-        index = columns.index(column) + 1
-        worksheet.set_number_format(1, index, loan.duration + 1, 1, '0.000000000000000')
-      end
-
-      currency_columns.each do |column|
-        index = columns.index(column) + 1
-        worksheet.set_number_format(1, index, loan.duration + 1, 1, '0.00')
-      end
       worksheet.save
       worksheet.reload
 
-      CSV.open('test.csv', 'wb') do |csv|
-        loan.duration.times do |line|
-          row = []
-          columns.each.with_index do |name, column|
-            row << (
-              case name
-              when 'index'
-                worksheet[line + 2, column + 1]
-              when 'due_on'
-                Date.parse(worksheet[line + 2, column + 1]).strftime('%m/%d/%Y')
-              else
-                worksheet[line + 2, column + 1].gsub(',', '.').to_f
-              end
-            )
-          end
-          csv << row
-        end
-      end
+      generate_csv(worksheet: worksheet)
 
       puts worksheet.human_url
     end
