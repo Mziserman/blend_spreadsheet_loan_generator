@@ -38,6 +38,7 @@ module SpreadsheetLoanGenerator
 
       spreadsheet = session.create_spreadsheet(loan.name)
       worksheet = spreadsheet.worksheets.first
+      @formula = Formula.new(loan: loan)
 
       apply_formulas(worksheet: worksheet)
       apply_formats(worksheet: worksheet)

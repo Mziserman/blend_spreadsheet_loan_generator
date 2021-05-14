@@ -86,6 +86,17 @@ module SpreadsheetLoanGenerator
         end
       end
 
+      def apply_formulas(worksheet:)
+        columns.each.with_index do |title, column|
+          worksheet[1, column + 1] = title
+        end
+        loan.duration.times do |line|
+          columns.each.with_index do |title, column|
+            worksheet[line + 2, column + 1] = @formula.send("#{title}_formula", line: line + 2)
+          end
+        end
+      end
+
       def column_range(column: 'A', upto: , exclude_head: true)
         start_line = exclude_head ? 2 : 1
 

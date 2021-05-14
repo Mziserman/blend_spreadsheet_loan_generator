@@ -13,10 +13,14 @@ module SpreadsheetLoanGenerator
   extend Dry::CLI::Registry
 
   autoload :SpreadsheetConcern, 'spreadsheet_loan_generator/concerns/spreadsheet_concern'
-  autoload :FormulaConcern, 'spreadsheet_loan_generator/concerns/formula_concern'
   autoload :CsvConcern, 'spreadsheet_loan_generator/concerns/csv_concern'
-  autoload :ServiceWrapper, 'spreadsheet_loan_generator/service_wrapper'
   autoload :Loan, 'spreadsheet_loan_generator/loan'
+
+  autoload :Formula, 'spreadsheet_loan_generator/formula'
+  autoload :Linear, 'spreadsheet_loan_generator/formula/linear'
+  autoload :Standard, 'spreadsheet_loan_generator/formula/standard'
+  autoload :NormalInterests, 'spreadsheet_loan_generator/formula/normal_interests'
+  autoload :SimpleInterests, 'spreadsheet_loan_generator/formula/simple_interests'
 
   autoload :Version, 'spreadsheet_loan_generator/version'
   autoload :Generate, 'spreadsheet_loan_generator/generate'

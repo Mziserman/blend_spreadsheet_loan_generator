@@ -31,6 +31,14 @@ module SpreadsheetLoanGenerator
       @interests_type = interests_type
     end
 
+    def loan_type_formula
+      "#{type.classify}".constantize.new(loan: self)
+    end
+
+    def interests_formula
+      "#{interests_type.classify}Interests".constantize.new(loan: self)
+    end
+
     def name_type
       return 'bullet' if bullet?
       return 'in_fine' if in_fine?
