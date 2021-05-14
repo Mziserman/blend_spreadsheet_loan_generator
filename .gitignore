@@ -13,3 +13,5 @@
 # google oauth credentials
 credentials.json
 token.yaml
+
+Gemfile.lock
