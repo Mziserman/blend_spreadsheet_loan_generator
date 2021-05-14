@@ -23,7 +23,9 @@ module SpreadsheetLoanGenerator
       duration = duration.to_i
       rate = rate.to_f
 
-      session = GoogleDrive::Session.from_config('config.json')
+      session = GoogleDrive::Session.from_config(
+        File.join(ENV['SPREADSHEET_LOAN_GENERATOR_DIR'], 'config.json')
+      )
       spreadsheet = session.create_spreadsheet('new test')
       worksheet = spreadsheet.worksheets.first
 

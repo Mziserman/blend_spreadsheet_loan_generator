@@ -2,14 +2,8 @@ require 'bundler/setup'
 require 'dry/cli'
 require 'google_drive'
 require 'active_support/all'
-require 'google/apis/sheets_v4'
-require 'googleauth'
-require 'googleauth/stores/file_token_store'
 require 'fileutils'
 require 'csv'
-
-require 'dotenv'
-Dotenv.load
 
 require 'spreadsheet_loan_generator/version'
 
@@ -25,7 +19,9 @@ module SpreadsheetLoanGenerator
 
   autoload :Version, 'spreadsheet_loan_generator/version'
   autoload :Generate, 'spreadsheet_loan_generator/generate'
+  autoload :Init, 'spreadsheet_loan_generator/init'
 
+  register 'init', Init, aliases: ['i', '-i', '--init']
   register 'version', Version, aliases: ['v', '-v', '--version']
   register 'generate', Generate, aliases: ['g', '-g', '--generate']
 end
