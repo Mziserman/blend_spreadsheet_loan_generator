@@ -30,9 +30,9 @@ module SpreadsheetLoanGenerator
       end
 
       def total_paid_capital_end_of_period_formula(line:)
-        return "=#{period_capital(line)} - #{period_reimbursed_capitalized_interests(line)}" if line == 2
+        return "=#{period_capital(line)}" if line == 2
 
-        "=SOMME(#{column_range(column: period_capital, upto: line)}) - SOMME(#{column_range(column: period_reimbursed_capitalized_interests, upto: line)})"
+        "=SOMME(#{column_range(column: period_capital, upto: line)})"
       end
 
       def total_paid_interests_end_of_period_formula(line:)
@@ -62,14 +62,7 @@ module SpreadsheetLoanGenerator
       end
 
       def period_capital_formula(line:)
-        term = line - 1
-        if term <= loan.deferred_and_capitalized
-          excel_float(float: 0.0)
-        elsif term <= loan.deferred_and_capitalized + loan.deferred
-          excel_float(float: 0.0)
-        else
-          "=-PPMT(#{standard_params(line: line)})"
-        end
+        "=#{period_calculated_capital(line)} - #{period_reimbursed_capitalized_interests(line)}"
       end
 
       def standard_params(line:)
@@ -82,6 +75,17 @@ module SpreadsheetLoanGenerator
         end
 
         "#{period_rate(line)};#{term_cell};#{loan.non_deferred_duration};#{amount}"
+      end
+
+      def period_calculated_capital_formula(line:)
+        term = line - 1
+        if term <= loan.deferred_and_capitalized
+          excel_float(float: 0.0)
+        elsif term <= loan.deferred_and_capitalized + loan.deferred
+          excel_float(float: 0.0)
+        else
+          "=-PPMT(#{standard_params(line: line)})"
+        end
       end
 
       def period_total_formula(line:)
@@ -99,7 +103,7 @@ module SpreadsheetLoanGenerator
         if term <= loan.deferred_and_capitalized + loan.deferred
           excel_float(float: 0.0)
         else
-          "=MIN(#{period_capital(line)}; #{capitalized_interests_start(line)})"
+          "=MIN(#{period_calculated_capital(line)}; #{capitalized_interests_start(line)})"
         end
       end
 
@@ -131,7 +135,8 @@ module SpreadsheetLoanGenerator
           capitalized_interests_start_formula(line: line),
           capitalized_interests_end_formula(line: line),
           period_rate_formula,
-          period_reimbursed_capitalized_interests_formula(line: line)
+          period_reimbursed_capitalized_interests_formula(line: line),
+          period_calculated_capital_formula(line: line)
         ]
       end
     end
