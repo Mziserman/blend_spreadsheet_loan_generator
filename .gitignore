@@ -11,7 +11,6 @@
 .rspec_status
 
 # google oauth credentials
-credentials.json
-token.yaml
+.env
 
 Gemfile.lock
