@@ -4,7 +4,7 @@ module SpreadsheetLoanGenerator
 
     included do
       def generate_csv(worksheet:)
-        CSV.open('test.csv', 'wb') do |csv|
+        CSV.open("#{loan.name}.csv", 'wb') do |csv|
           loan.duration.times do |line|
             row = []
             columns.each.with_index do |name, column|

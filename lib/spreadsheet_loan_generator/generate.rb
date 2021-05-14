@@ -23,8 +23,6 @@ module SpreadsheetLoanGenerator
       session = GoogleDrive::Session.from_config(
         File.join(ENV['SPREADSHEET_LOAN_GENERATOR_DIR'], 'config.json')
       )
-      spreadsheet = session.create_spreadsheet('new test')
-      worksheet = spreadsheet.worksheets.first
 
       @loan = Loan.new(
         amount: amount,
@@ -37,6 +35,9 @@ module SpreadsheetLoanGenerator
         type: options.fetch(:type),
         interests_type: options.fetch(:interests_type)
       )
+
+      spreadsheet = session.create_spreadsheet(loan.name)
+      worksheet = spreadsheet.worksheets.first
 
       apply_formulas(worksheet: worksheet)
       apply_formats(worksheet: worksheet)
