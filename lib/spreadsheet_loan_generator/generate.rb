@@ -49,8 +49,34 @@ module SpreadsheetLoanGenerator
           worksheet[line + 1, column + 1] = formula
         end
       end
+      precise_columns.each do |column|
+        index = columns.index(column) + 1
+        worksheet.set_number_format(1, index, loan.duration + 1, 1, '0.000000000000000')
+      end
 
+      currency_columns.each do |column|
+        index = columns.index(column) + 1
+        worksheet.set_number_format(1, index, loan.duration + 1, 1, '0.00')
+      end
       worksheet.save
+      worksheet.reload
+
+      CSV.open('test.csv', 'wb') do |csv|
+        loan.duration.times do |line|
+          row = []
+          columns.each.with_index do |name, column|
+            row << (
+              if name.in?(%[index due_on])
+                worksheet[line + 2, column + 1]
+              else
+                worksheet[line + 2, column + 1].gsub(',', '.').to_f
+              end
+            )
+          end
+          csv << row
+        end
+      end
+
       puts worksheet.human_url
     end
   end

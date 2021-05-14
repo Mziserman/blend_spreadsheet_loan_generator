@@ -62,7 +62,11 @@ module SpreadsheetLoanGenerator
       end
 
       def period_capital_formula(line:)
-        "=#{period_calculated_capital(line)} - #{period_reimbursed_capitalized_interests(line)}"
+        if line == loan.duration + 1
+          "=ARRONDI(#{excel_float(float: loan.amount)} - #{total_paid_capital_end_of_period(line - 1)}; 2)"
+        else
+          "=ARRONDI(#{period_calculated_capital(line)} - #{period_reimbursed_capitalized_interests(line)}; 2)"
+        end
       end
 
       def standard_params(line:)

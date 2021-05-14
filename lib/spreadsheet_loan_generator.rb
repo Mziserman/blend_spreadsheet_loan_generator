@@ -6,6 +6,7 @@ require 'google/apis/sheets_v4'
 require 'googleauth'
 require 'googleauth/stores/file_token_store'
 require 'fileutils'
+require 'csv'
 
 
 require 'spreadsheet_loan_generator/version'

@@ -26,6 +26,32 @@ module SpreadsheetLoanGenerator
         ]
       end
 
+      def currency_columns
+        %w[
+          remaining_capital_start
+          remaining_capital_end
+          amount_to_add
+          period_interests
+          period_capital
+          total_paid_capital_end_of_period
+          total_paid_interests_end_of_period
+          period_total
+          capitalized_interests_start
+          capitalized_interests_end
+          period_reimbursed_capitalized_interests
+        ]
+      end
+
+      def precise_columns
+        %w[
+          period_calculated_interests
+          delta
+          accrued_delta
+          period_rate
+          period_calculated_capital
+        ]
+      end
+
       def column_letter
         {
           index: 'A',
