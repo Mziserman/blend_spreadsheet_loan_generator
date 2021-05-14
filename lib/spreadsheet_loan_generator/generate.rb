@@ -66,8 +66,11 @@ module SpreadsheetLoanGenerator
           row = []
           columns.each.with_index do |name, column|
             row << (
-              if name.in?(%[index due_on])
+              case name
+              when 'index'
                 worksheet[line + 2, column + 1]
+              when 'due_on'
+                Date.parse(worksheet[line + 2, column + 1]).strftime('%m/%d/%Y')
               else
                 worksheet[line + 2, column + 1].gsub(',', '.').to_f
               end
