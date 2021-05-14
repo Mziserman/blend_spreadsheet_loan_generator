@@ -96,7 +96,7 @@ module SpreadsheetLoanGenerator
         index + 1 # first term is on line 2
       end
 
-      def excel_float(float:)
+      def excel_float(float)
         float.to_s.gsub('.', ',')
       end
 

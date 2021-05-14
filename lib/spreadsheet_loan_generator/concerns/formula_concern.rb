@@ -15,7 +15,7 @@ module SpreadsheetLoanGenerator
       end
 
       def remaining_capital_start_formula(line:)
-        base = excel_float(float: loan.amount)
+        base = excel_float(loan.amount)
 
         return base if line == 2
 
@@ -23,7 +23,7 @@ module SpreadsheetLoanGenerator
       end
 
       def remaining_capital_end_formula(line:)
-        base = excel_float(float: loan.amount)
+        base = excel_float(loan.amount)
 
         "=#{base} - #{total_paid_capital_end_of_period(line)}"
       end
@@ -33,7 +33,7 @@ module SpreadsheetLoanGenerator
       end
 
       def accrued_delta_formula(line:)
-        return excel_float(float: 0.0) if line == 2
+        return excel_float(0.0) if line == 2
 
         "=ARRONDI(#{accrued_delta(line - 1)} + #{delta(line)}; 14)"
       end
@@ -53,26 +53,28 @@ module SpreadsheetLoanGenerator
       def period_rate_formula(*)
         case loan.interests_type
         when 'normal'
-          "=TAUX.NOMINAL(#{excel_float(float: loan.rate)};#{excel_float(float: 12.0 / loan.period_duration)})"
+          "=TAUX.NOMINAL(#{excel_float(loan.rate)};#{excel_float(12.0 / loan.period_duration)})"
         when 'simple'
-          "=#{excel_float(float: loan.rate)} * #{loan.period_duration} / 12,0"
+          "=#{excel_float(loan.rate)} * #{loan.period_duration} / 12,0"
         end
       end
 
       def period_interests_formula(line:)
         term = line - 1
         if term <= loan.deferred_and_capitalized
-          excel_float(float: 0.0)
+          excel_float(0.0)
         elsif term <= loan.deferred_and_capitalized + loan.deferred
           "=ARRONDI(#{period_calculated_interests(line)}; 2)"
-        else
+        elsif loan.type == 'standard'
           "=ARRONDI(-IPMT(#{standard_params(line: line)}); 2)"
+        elsif loan.type == 'linear'
+          "=ARRONDI(#{period_calculated_interests(line)}; 2)"
         end
       end
 
       def period_capital_formula(line:)
         if line == loan.duration + 1
-          "=ARRONDI(#{excel_float(float: loan.amount)} - #{total_paid_capital_end_of_period(line - 1)}; 2)"
+          "=ARRONDI(#{excel_float(loan.amount)} - #{total_paid_capital_end_of_period(line - 1)}; 2)"
         else
           "=ARRONDI(#{period_calculated_capital(line)} - #{period_reimbursed_capitalized_interests(line)}; 2)"
         end
@@ -80,10 +82,10 @@ module SpreadsheetLoanGenerator
 
       def standard_params(line:)
         if loan.deferred_and_capitalized.zero?
-          amount = excel_float(float: loan.amount)
+          amount = excel_float(loan.amount)
           term_cell = "#{column_letter[:index]}#{line}"
         else
-          amount = "#{capitalized_interests_end(loan.deferred_and_capitalized + 1)} + #{excel_float(float: loan.amount)}"
+          amount = "#{capitalized_interests_end(loan.deferred_and_capitalized + 1)} + #{excel_float(loan.amount)}"
           term_cell = "#{column_letter[:index]}#{line} - #{loan.total_deferred_duration}"
         end
 
@@ -93,11 +95,19 @@ module SpreadsheetLoanGenerator
       def period_calculated_capital_formula(line:)
         term = line - 1
         if term <= loan.deferred_and_capitalized
-          excel_float(float: 0.0)
+          excel_float(0.0)
         elsif term <= loan.deferred_and_capitalized + loan.deferred
-          excel_float(float: 0.0)
-        else
+          excel_float(0.0)
+        elsif loan.type == 'standard'
           "=-PPMT(#{standard_params(line: line)})"
+        elsif loan.type == 'linear'
+          amount =
+            if loan.deferred_and_capitalized.zero?
+              excel_float(loan.amount)
+            else
+              "#{capitalized_interests_end(loan.deferred_and_capitalized + 1)} + #{excel_float(loan.amount)}"
+            end
+          "=(#{amount}) / #{loan.non_deferred_duration}"
         end
       end
 
@@ -106,7 +116,7 @@ module SpreadsheetLoanGenerator
       end
 
       def capitalized_interests_start_formula(line:)
-        return excel_float(float: 0.0) if line == 2
+        return excel_float(0.0) if line == 2
 
         "=ARRONDI(#{capitalized_interests_end(line - 1)}; 2)"
       end
@@ -114,7 +124,7 @@ module SpreadsheetLoanGenerator
       def period_reimbursed_capitalized_interests_formula(line:)
         term = line - 1
         if term <= loan.deferred_and_capitalized + loan.deferred
-          excel_float(float: 0.0)
+          excel_float(0.0)
         else
           "=ARRONDI(MIN(#{period_calculated_capital(line)}; #{capitalized_interests_start(line)}); 2)"
         end
@@ -132,7 +142,7 @@ module SpreadsheetLoanGenerator
       def delta_formula(line:)
         amount_added =
           if line == 2
-            excel_float(float: 0.0)
+            excel_float(0.0)
           elsif line > 2
             "SOMME(#{column_range(column: amount_to_add, upto: line - 1)})"
           end
