@@ -19,10 +19,6 @@ module SpreadsheetLoanGenerator
     option :interests_type, type: :string, default: 'simple', values: %w[simple realistic normal], desc: 'type of interests calculations'
 
     def call(amount:, duration:, rate:, **options)
-      amount = amount.to_f
-      duration = duration.to_i
-      rate = rate.to_f
-
       session = GoogleDrive::Session.from_config(
         File.join(ENV['SPREADSHEET_LOAN_GENERATOR_DIR'], 'config.json')
       )
@@ -42,7 +38,7 @@ module SpreadsheetLoanGenerator
       )
 
       timetable = [columns]
-      timetable += duration.times.map.with_index do |_, index|
+      timetable += loan.duration.times.map.with_index do |_, index|
         row(term: index + 1) # indexs start at 0, terms at 1
       end
 
