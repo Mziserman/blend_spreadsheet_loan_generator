@@ -18,6 +18,7 @@ module SpreadsheetLoanGenerator
     option :type, type: :string, default: 'standard', values: %w[standard linear], desc: 'type of amortization'
     option :interests_type, type: :string, default: 'simple', values: %w[simple realistic normal], desc: 'type of interests calculations'
     option :starting_capitalized_interests, type: :float, default: 0.0, desc: 'starting capitalized interests (if ongoing loan)'
+    option :target_path, type: :string, default: './', desc: 'where to put the generated csv'
 
     def call(amount:, duration:, rate:, **options)
       session = GoogleDrive::Session.from_config(
@@ -47,7 +48,7 @@ module SpreadsheetLoanGenerator
       worksheet.save
       worksheet.reload
 
-      generate_csv(worksheet: worksheet)
+      generate_csv(worksheet: worksheet, target_path: options.fetch(:target_path))
 
       puts worksheet.human_url
     end

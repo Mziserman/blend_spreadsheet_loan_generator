@@ -3,8 +3,9 @@ module SpreadsheetLoanGenerator
     extend ActiveSupport::Concern
 
     included do
-      def generate_csv(worksheet:)
-        CSV.open("#{loan.name}.csv", 'wb') do |csv|
+      def generate_csv(worksheet:, target_path:)
+        filename = File.join(target_path, "#{loan.name}.csv")
+        CSV.open(filename, 'wb') do |csv|
           loan.duration.times do |line|
             row = []
             columns.each.with_index do |name, column|
