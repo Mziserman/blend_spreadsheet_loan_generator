@@ -16,9 +16,5 @@ module SpreadsheetLoanGenerator
         end
       "=#{amount} / #{loan.non_deferred_duration}"
     end
-
-    def period_interests_formula(line:)
-      "=ARRONDI(#{period_calculated_interests(line)}; 2)"
-    end
   end
 end

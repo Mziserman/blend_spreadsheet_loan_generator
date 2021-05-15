@@ -78,7 +78,7 @@ module SpreadsheetLoanGenerator
       def apply_formats(worksheet:)
         precise_columns.each do |column|
           index = columns.index(column) + 1
-          worksheet.set_number_format(1, index, loan.duration + 1, 1, '0.000000000000000')
+          worksheet.set_number_format(1, index, loan.duration + 1, 1, '0.00000000')
         end
         currency_columns.each do |column|
           index = columns.index(column) + 1

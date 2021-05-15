@@ -24,8 +24,8 @@ module SpreadsheetLoanGenerator
       "=-PPMT(#{standard_params(line: line)})"
     end
 
-    def period_interests_formula(line:)
-      "=ARRONDI(-IPMT(#{standard_params(line: line)}); 2)"
+    def period_calculated_interests_formula(line:)
+      "=-IPMT(#{standard_params(line: line)})"
     end
   end
 end
