@@ -1,7 +1,6 @@
 module SpreadsheetLoanGenerator
   class Generate < Dry::CLI::Command
     include SpreadsheetConcern
-    include FormulaConcern
     include CsvConcern
 
     attr_accessor :loan
@@ -10,7 +9,7 @@ module SpreadsheetLoanGenerator
 
     argument :amount, type: :float, required: true, desc: 'amount borrowed'
     argument :duration, type: :integer, required: true, desc: 'number of reimbursements'
-    argument :rate, type: :rate, required: true, desc: 'year rate'
+    argument :rate, type: :float, required: true, desc: 'year rate'
 
     option :period_duration, type: :integer, default: 1, desc: 'duration of a period in months'
     option :due_on, type: :date, default: Date.today, desc: 'date of the first day of the first period DD/MM/YYYY'
@@ -18,6 +17,7 @@ module SpreadsheetLoanGenerator
     option :deferred, type: :integer, default: 0, desc: 'periods with only interests paid'
     option :type, type: :string, default: 'standard', values: %w[standard linear], desc: 'type of amortization'
     option :interests_type, type: :string, default: 'simple', values: %w[simple realistic normal], desc: 'type of interests calculations'
+    option :starting_capitalized_interests, type: :float, default: 0.0, desc: 'starting capitalized interests (if ongoing loan)'
 
     def call(amount:, duration:, rate:, **options)
       session = GoogleDrive::Session.from_config(
@@ -33,7 +33,8 @@ module SpreadsheetLoanGenerator
         deferred_and_capitalized: options.fetch(:deferred_and_capitalized),
         deferred: options.fetch(:deferred),
         type: options.fetch(:type),
-        interests_type: options.fetch(:interests_type)
+        interests_type: options.fetch(:interests_type),
+        starting_capitalized_interests: options.fetch(:starting_capitalized_interests)
       )
 
       spreadsheet = session.create_spreadsheet(loan.name)

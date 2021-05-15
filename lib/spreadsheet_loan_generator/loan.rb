@@ -8,7 +8,8 @@ module SpreadsheetLoanGenerator
                   :deferred_and_capitalized,
                   :deferred,
                   :type,
-                  :interests_type
+                  :interests_type,
+                  :starting_capitalized_interests
 
     def initialize(
       amount:,
@@ -19,7 +20,8 @@ module SpreadsheetLoanGenerator
       deferred_and_capitalized:,
       deferred:,
       type:,
-      interests_type:)
+      interests_type:,
+      starting_capitalized_interests:)
       @amount = amount.to_f
       @duration = duration.to_i
       @period_duration = period_duration.to_i
@@ -29,14 +31,16 @@ module SpreadsheetLoanGenerator
       @deferred = deferred.to_i
       @type = type
       @interests_type = interests_type
+
+      @starting_capitalized_interests = starting_capitalized_interests.to_f
     end
 
     def loan_type_formula
-      "#{type.classify}".constantize.new(loan: self)
+      "SpreadsheetLoanGenerator::#{type.classify}".constantize.new(loan: self)
     end
 
     def interests_formula
-      "#{interests_type.classify}Interests".constantize.new(loan: self)
+      "SpreadsheetLoanGenerator::#{interests_type.classify}Interests".constantize.new(loan: self)
     end
 
     def name_type

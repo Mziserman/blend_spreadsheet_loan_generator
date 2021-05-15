@@ -7,7 +7,7 @@ module SpreadsheetLoanGenerator
     def initialize(loan:)
       @loan = loan
       @interests_formula = loan.interests_formula
-      @loan_type_formula = loan.lona_type_formula
+      @loan_type_formula = loan.loan_type_formula
     end
 
     def index_formula(line:)
@@ -43,7 +43,7 @@ module SpreadsheetLoanGenerator
     def accrued_delta_formula(line:)
       return excel_float(0.0) if line == 2
 
-      "=ARRONDI(#{accrued_delta(line - 1)} + #{delta(line)}; 14)"
+      "=ARRONDI(#{accrued_delta(line - 1)} + #{delta(line)} - #{amount_to_add(line - 1)}; 14)"
     end
 
     def total_paid_capital_end_of_period_formula(line:)
@@ -78,19 +78,13 @@ module SpreadsheetLoanGenerator
     end
 
     def capitalized_interests_start_formula(line:)
-      return excel_float(0.0) if line == 2
+      return excel_float(loan.starting_capitalized_interests) if line == 2
 
       "=ARRONDI(#{capitalized_interests_end(line - 1)}; 2)"
     end
 
     def delta_formula(line:)
-      amount_added =
-        if line == 2
-          excel_float(0.0)
-        elsif line > 2
-          "SOMME(#{column_range(column: amount_to_add, upto: line - 1)})"
-        end
-      "=ARRONDI(#{period_calculated_interests(line)} - #{period_interests(line)} - (#{capitalized_interests_end(line)} - #{capitalized_interests_start(line)}) - #{period_reimbursed_capitalized_interests(line)}; 14) - #{amount_added}"
+      "=ARRONDI(#{period_calculated_interests(line)} - #{period_interests(line)} - (#{capitalized_interests_end(line)} - #{capitalized_interests_start(line)}) - #{period_reimbursed_capitalized_interests(line)}; 14)"
     end
 
     def amount_to_add_formula(line:)

@@ -14,13 +14,14 @@ module SpreadsheetLoanGenerator
 
   autoload :SpreadsheetConcern, 'spreadsheet_loan_generator/concerns/spreadsheet_concern'
   autoload :CsvConcern, 'spreadsheet_loan_generator/concerns/csv_concern'
-  autoload :Loan, 'spreadsheet_loan_generator/loan'
 
+  autoload :Linear, 'spreadsheet_loan_generator/linear'
+  autoload :Standard, 'spreadsheet_loan_generator/standard'
+  autoload :NormalInterests, 'spreadsheet_loan_generator/normal_interests'
+  autoload :SimpleInterests, 'spreadsheet_loan_generator/simple_interests'
   autoload :Formula, 'spreadsheet_loan_generator/formula'
-  autoload :Linear, 'spreadsheet_loan_generator/formula/linear'
-  autoload :Standard, 'spreadsheet_loan_generator/formula/standard'
-  autoload :NormalInterests, 'spreadsheet_loan_generator/formula/normal_interests'
-  autoload :SimpleInterests, 'spreadsheet_loan_generator/formula/simple_interests'
+
+  autoload :Loan, 'spreadsheet_loan_generator/loan'
 
   autoload :Version, 'spreadsheet_loan_generator/version'
   autoload :Generate, 'spreadsheet_loan_generator/generate'
