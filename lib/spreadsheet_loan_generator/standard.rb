@@ -15,7 +15,7 @@ module SpreadsheetLoanGenerator
         else
           "#{capitalized_interests_end(loan.deferred_and_capitalized + 1)} + #{excel_float(loan.amount)}"
         end
-      term_cell = "#{column_letter[:index]}#{line} - #{loan.total_deferred_duration}"
+      term_cell = "#{index(line)} - #{loan.total_deferred_duration}"
 
       "#{period_rate(line)};#{term_cell};#{loan.non_deferred_duration};#{amount}"
     end

@@ -1,4 +1,3 @@
-require 'bundler/setup'
 require 'dry/cli'
 require 'google_drive'
 require 'active_support/all'

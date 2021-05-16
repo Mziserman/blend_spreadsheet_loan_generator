@@ -56,6 +56,15 @@ module SpreadsheetLoanGenerator
       end
     end
 
+    def period_theoric_interests_formula(line:)
+      term = line - 1
+      if term <= loan.total_deferred_duration
+        excel_float(0.0)
+      else
+        "=#{period_calculated_interests(line)}"
+      end
+    end
+
     def period_calculated_interests_formula(line:)
       term = line - 1
       if loan.type == 'standard' && loan.total_deferred_duration < term
