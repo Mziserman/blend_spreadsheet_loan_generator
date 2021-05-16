@@ -84,7 +84,9 @@ module SpreadsheetLoanGenerator
     end
 
     def name
-      [
+      args = []
+      args += ['realistic'] if interests_type == 'realistic'
+      args += [
         name_type,
         name_period_duration,
         amount,
@@ -92,7 +94,9 @@ module SpreadsheetLoanGenerator
         duration.to_s,
         name_deferred,
         name_due_on
-      ].join('_')
+      ]
+
+      args.join('_')
     end
 
     def fully_deferred?

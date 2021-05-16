@@ -58,7 +58,7 @@ module SpreadsheetLoanGenerator
 
     def period_theoric_interests_formula(line:)
       term = line - 1
-      if term <= loan.total_deferred_duration
+      if term <= loan.deferred_and_capitalized
         excel_float(0.0)
       else
         "=#{period_calculated_interests(line)}"
@@ -133,7 +133,7 @@ module SpreadsheetLoanGenerator
     end
 
     def delta_formula(line:)
-      "=#{period_calculated_interests(line)} - #{period_interests(line)} - (#{capitalized_interests_end(line)} - #{capitalized_interests_start(line)}) - #{period_reimbursed_capitalized_interests(line)}"
+      "=#{period_theoric_interests(line)} - #{period_interests(line)}"
     end
 
     def accrued_delta_formula(line:)

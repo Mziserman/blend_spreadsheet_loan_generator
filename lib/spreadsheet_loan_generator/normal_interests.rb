@@ -8,7 +8,8 @@ module SpreadsheetLoanGenerator
     end
 
     def period_rate_formula(*)
-      "=TAUX.NOMINAL(#{excel_float(loan.rate)};#{excel_float(12.0 / loan.period_duration)})"
+      periods_per_year = excel_float(12.0 / loan.period_duration)
+      "=TAUX.NOMINAL(#{excel_float(loan.rate)};#{periods_per_year}) / #{periods_per_year}"
     end
   end
 end
