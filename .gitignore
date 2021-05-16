@@ -10,7 +10,7 @@
 # rspec failure tracking
 .rspec_status
 
-# google oauth credentials
-.env
-
 Gemfile.lock
+
+*.csv
+*.gem
