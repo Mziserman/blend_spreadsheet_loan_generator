@@ -136,5 +136,21 @@ module SpreadsheetLoanGenerator
     def amount_to_add_formula(line:)
       "=TRONQUE(#{accrued_delta(line)}; 2)"
     end
+
+    def period_leap_days_formula(line:)
+      term = line - 1
+      from = loan.due_on + ((term - 1) * loan.period_duration).months
+      to = loan.due_on + (term * loan.period_duration).months - 1.day
+
+      (from..to).sum { |d| d.leap? ? 1 : 0 }
+    end
+
+    def period_non_leap_days_formula(line:)
+      term = line - 1
+      from = loan.due_on + ((term - 1) * loan.period_duration).months
+      to = loan.due_on + (term * loan.period_duration).months - 1.day
+
+      (from..to).sum { |d| d.leap? ? 0 : 1 }
+    end
   end
 end

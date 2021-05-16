@@ -33,6 +33,16 @@ module SpreadsheetLoanGenerator
       @interests_type = interests_type
 
       @starting_capitalized_interests = starting_capitalized_interests.to_f
+
+      print_validation_errors
+    end
+
+    def print_validation_errors
+      puts 'amount < 0' if amount < 0
+      puts 'deferred & deferred_and_capitalized >= duration' if total_deferred_duration >= duration
+      if type == 'standard' && interests_type == 'realistic' && !fully_deferred?
+        puts 'standard & realistic interests do not work together'
+      end
     end
 
     def loan_type_formula

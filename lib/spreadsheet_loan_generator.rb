@@ -19,6 +19,7 @@ module SpreadsheetLoanGenerator
   autoload :Standard, 'spreadsheet_loan_generator/standard'
   autoload :NormalInterests, 'spreadsheet_loan_generator/normal_interests'
   autoload :SimpleInterests, 'spreadsheet_loan_generator/simple_interests'
+  autoload :RealisticInterests, 'spreadsheet_loan_generator/realistic_interests'
   autoload :Formula, 'spreadsheet_loan_generator/formula'
 
   autoload :Loan, 'spreadsheet_loan_generator/loan'

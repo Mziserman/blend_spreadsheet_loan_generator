@@ -23,6 +23,8 @@ module SpreadsheetLoanGenerator
           period_rate
           period_reimbursed_capitalized_interests
           period_calculated_capital
+          period_leap_days
+          period_non_leap_days
         ]
       end
 
@@ -71,7 +73,9 @@ module SpreadsheetLoanGenerator
           capitalized_interests_end: 'O',
           period_rate: 'P',
           period_reimbursed_capitalized_interests: 'Q',
-          period_calculated_capital: 'R'
+          period_calculated_capital: 'R',
+          period_leap_days: 'S',
+          period_non_leap_days: 'T'
         }
       end
 
