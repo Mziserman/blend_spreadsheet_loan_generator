@@ -12,7 +12,7 @@ module SpreadsheetLoanGenerator
     argument :rate, type: :float, required: true, desc: 'year rate'
 
     option :period_duration, type: :integer, default: 1, desc: 'duration of a period in months'
-    option :due_on, type: :date, default: Date.today, desc: 'date of the first day of the first period DD/MM/YYYY'
+    option :due_on, type: :date, default: Date.today, desc: 'date of the pay day of the first period DD/MM/YYYY'
     option :deferred_and_capitalized, type: :integer, default: 0, desc: 'periods with no capital or interests paid'
     option :deferred, type: :integer, default: 0, desc: 'periods with only interests paid'
     option :type, type: :string, default: 'standard', values: %w[standard linear], desc: 'type of amortization'
@@ -21,9 +21,18 @@ module SpreadsheetLoanGenerator
     option :target_path, type: :string, default: './', desc: 'where to put the generated csv'
 
     def call(amount:, duration:, rate:, **options)
-      session = GoogleDrive::Session.from_config(
-        File.join(ENV['SPREADSHEET_LOAN_GENERATOR_DIR'], 'config.json')
-      )
+      begin
+        session = GoogleDrive::Session.from_config(
+          File.join(ENV['SPREADSHEET_LOAN_GENERATOR_DIR'], 'config.json')
+        )
+      rescue StandardError => e
+        if ENV['SPREADSHEET_LOAN_GENERATOR_DIR'].blank?
+          puts 'please set SPREADSHEET_LOAN_GENERATOR_DIR'
+        else
+          puts 'Cannot connect to google drive. Did you run slg init CLIENT_ID CLIENT_SECRET ?'
+        end
+        return
+      end
 
       @loan = Loan.new(
         amount: amount,
