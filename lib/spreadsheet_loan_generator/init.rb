@@ -1,8 +1,8 @@
 module SpreadsheetLoanGenerator
   class Init < Dry::CLI::Command
 
-    argument :client_id, type: :string, required: true, desc: 'amount borrowed'
-    argument :client_secret, type: :string, required: true, desc: 'number of reimbursements'
+    argument :client_id, type: :string, required: true, desc: 'GCP client_id'
+    argument :client_secret, type: :string, required: true, desc: 'GCP client_secret'
 
     def call(client_id:, client_secret:)
       if !ENV.key?('SPREADSHEET_LOAN_GENERATOR_DIR')
