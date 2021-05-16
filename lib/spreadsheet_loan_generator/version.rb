@@ -1,7 +1,7 @@
 require 'dry/cli'
 
 module SpreadsheetLoanGenerator
-  VERSION = '0.1.4'
+  VERSION = '0.1.5'
 
   class Version < Dry::CLI::Command
     desc 'Print version'

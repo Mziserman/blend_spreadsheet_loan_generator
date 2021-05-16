@@ -16,7 +16,7 @@ module SpreadsheetLoanGenerator
 
     def due_on_formula(line:)
       term = line - 1
-      loan.due_on + (term * loan.period_duration).months
+      loan.due_on + ((term - 1) * loan.period_duration).months
     end
 
     def period_capital_formula(line:)
@@ -148,18 +148,18 @@ module SpreadsheetLoanGenerator
 
     def period_leap_days_formula(line:)
       term = line - 1
-      from = loan.due_on + ((term - 1) * loan.period_duration).months
-      to = loan.due_on + (term * loan.period_duration).months - 1.day
+      from = loan.due_on + ((term - 2) * loan.period_duration).months
+      to = loan.due_on + ((term - 1) * loan.period_duration).months
 
-      (from..to).sum { |d| d.leap? ? 1 : 0 }
+      (from...to).sum { |d| d.leap? ? 1 : 0 }
     end
 
     def period_non_leap_days_formula(line:)
       term = line - 1
-      from = loan.due_on + ((term - 1) * loan.period_duration).months
-      to = loan.due_on + (term * loan.period_duration).months - 1.day
+      from = loan.due_on + ((term - 2) * loan.period_duration).months
+      to = loan.due_on + ((term - 1) * loan.period_duration).months
 
-      (from..to).sum { |d| d.leap? ? 0 : 1 }
+      (from...to).sum { |d| d.leap? ? 0 : 1 }
     end
   end
 end
