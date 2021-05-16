@@ -25,4 +25,3 @@ RSpec.describe SpreadsheetLoanGenerator::SpreadsheetConcern do
     end
   end
 end
-
