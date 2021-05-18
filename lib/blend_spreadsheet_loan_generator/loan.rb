@@ -10,7 +10,8 @@ module BlendSpreadsheetLoanGenerator
                   :type,
                   :interests_type,
                   :starting_capitalized_interests,
-                  :fees_rate
+                  :fees_rate,
+                  :starting_capitalized_fees
 
     def initialize(
       amount:,
@@ -23,7 +24,8 @@ module BlendSpreadsheetLoanGenerator
       type:,
       interests_type:,
       starting_capitalized_interests:,
-      fees_rate:)
+      fees_rate:,
+      starting_capitalized_fees:)
       @amount = amount.to_f
       @duration = duration.to_i
       @period_duration = period_duration.to_i
@@ -35,6 +37,7 @@ module BlendSpreadsheetLoanGenerator
       @interests_type = interests_type
       @fees_rate = fees_rate.to_f
       @starting_capitalized_interests = starting_capitalized_interests.to_f
+      @starting_capitalized_fees = starting_capitalized_fees.to_f
 
       print_validation_errors
     end

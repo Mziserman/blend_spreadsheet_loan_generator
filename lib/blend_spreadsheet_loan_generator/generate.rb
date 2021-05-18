@@ -19,6 +19,7 @@ module BlendSpreadsheetLoanGenerator
     option :interests_type, type: :string, default: 'simple', values: %w[simple realistic normal], desc: 'type of interests calculations'
     option :fees_rate, type: :float, default: 0.0, required: true, desc: 'year fees rate'
     option :starting_capitalized_interests, type: :float, default: 0.0, desc: 'starting capitalized interests (if ongoing loan)'
+    option :starting_capitalized_fees, type: :float, default: 0.0, desc: 'starting capitalized fees (if ongoing loan)'
     option :target_path, type: :string, default: './', desc: 'where to put the generated csv'
 
     def call(amount:, duration:, rate:, **options)
@@ -46,6 +47,7 @@ module BlendSpreadsheetLoanGenerator
         type: options.fetch(:type),
         interests_type: options.fetch(:interests_type),
         starting_capitalized_interests: options.fetch(:starting_capitalized_interests),
+        starting_capitalized_fees: options.fetch(:starting_capitalized_fees),
         fees_rate: options.fetch(:fees_rate)
       )
 

@@ -181,7 +181,7 @@ module BlendSpreadsheetLoanGenerator
     end
 
     def capitalized_fees_start_formula(line:)
-      return excel_float(0.0) if line == 2
+      return excel_float(loan.starting_capitalized_fees) if line == 2
 
       "=ARRONDI(#{capitalized_fees_end(line - 1)}; 2)"
     end
