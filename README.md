@@ -32,5 +32,5 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/spreadsheet_loan_generator.
+Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/blend_spreadsheet_loan_generator.
 

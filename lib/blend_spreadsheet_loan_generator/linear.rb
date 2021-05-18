@@ -1,4 +1,4 @@
-module SpreadsheetLoanGenerator
+module BlendSpreadsheetLoanGenerator
   class Linear
     include SpreadsheetConcern
 
@@ -12,7 +12,7 @@ module SpreadsheetLoanGenerator
         if loan.deferred_and_capitalized.zero?
           excel_float(loan.amount)
         else
-          "(#{capitalized_interests_end(loan.deferred_and_capitalized + 1)} + #{excel_float(loan.amount)})"
+          "(#{capitalized_interests_end(loan.deferred_and_capitalized + 1)} + #{capitalized_fees_end(loan.deferred_and_capitalized + 1)} + #{excel_float(loan.amount)})"
         end
       "=#{amount} / #{loan.non_deferred_duration}"
     end

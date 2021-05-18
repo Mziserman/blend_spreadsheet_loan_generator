@@ -1,4 +1,4 @@
-module SpreadsheetLoanGenerator
+module BlendSpreadsheetLoanGenerator
   class Formula
     include SpreadsheetConcern
 
@@ -23,7 +23,7 @@ module SpreadsheetLoanGenerator
       if line == loan.duration + 1
         "=ARRONDI(#{excel_float(loan.amount)} - #{total_paid_capital_end_of_period(line - 1)}; 2)"
       else
-        "=ARRONDI(#{period_calculated_capital(line)} - #{period_reimbursed_capitalized_interests(line)}; 2)"
+        "=ARRONDI(#{period_calculated_capital(line)} - #{period_reimbursed_capitalized_interests(line)} - #{period_reimbursed_capitalized_fees(line)}; 2)"
       end
     end
 
@@ -66,11 +66,6 @@ module SpreadsheetLoanGenerator
     end
 
     def period_calculated_interests_formula(line:)
-      term = line - 1
-      if loan.type == 'standard' && loan.total_deferred_duration < term
-        return @loan_type_formula.period_calculated_interests_formula(line: line)
-      end
-
       amount_to_capitalize = [
         '(',
         remaining_capital_start(line),
@@ -124,7 +119,7 @@ module SpreadsheetLoanGenerator
       if term <= loan.total_deferred_duration
         excel_float(0.0)
       else
-        "=ARRONDI(MIN(#{period_calculated_capital(line)}; #{capitalized_interests_start(line)}); 2)"
+        "=ARRONDI(MIN(#{period_calculated_capital(line)} - #{period_reimbursed_capitalized_fees(line)}; #{capitalized_interests_start(line)}); 2)"
       end
     end
 
@@ -160,6 +155,57 @@ module SpreadsheetLoanGenerator
       to = loan.due_on + ((term - 1) * loan.period_duration).months
 
       (from...to).sum { |d| d.leap? ? 0 : 1 }
+    end
+
+    def period_fees_formula(line:)
+      term = line - 1
+      if term <= loan.deferred_and_capitalized
+        excel_float(0.0)
+      else
+        "=ARRONDI(#{period_calculated_fees(line)}; 2)"
+      end
+    end
+
+    def period_calculated_fees_formula(line:)
+      amount_to_capitalize = [
+        '(',
+        remaining_capital_start(line),
+        '+',
+        capitalized_interests_start(line),
+        '+',
+        capitalized_fees_start(line),
+        ')'
+      ].join(' ')
+
+      "=#{amount_to_capitalize} * #{period_fees_rate(line)}"
+    end
+
+    def capitalized_fees_start_formula(line:)
+      return excel_float(0.0) if line == 2
+
+      "=ARRONDI(#{capitalized_fees_end(line - 1)}; 2)"
+    end
+
+    def capitalized_fees_end_formula(line:)
+      term = line - 1
+      if term <= loan.deferred_and_capitalized
+        "=ARRONDI(#{capitalized_fees_start(line)} + #{period_calculated_fees(line)}; 2)"
+      else
+        "=ARRONDI(#{capitalized_fees_start(line)} - #{period_reimbursed_capitalized_fees(line)}; 2)"
+      end
+    end
+
+    def period_reimbursed_capitalized_fees_formula(line:)
+      term = line - 1
+      if term <= loan.total_deferred_duration
+        excel_float(0.0)
+      else
+        "=ARRONDI(MIN(#{period_calculated_capital(line)}; #{capitalized_fees_start(line)}); 2)"
+      end
+    end
+
+    def period_fees_rate_formula(line:)
+      @interests_formula.period_fees_rate_formula(line: line)
     end
   end
 end

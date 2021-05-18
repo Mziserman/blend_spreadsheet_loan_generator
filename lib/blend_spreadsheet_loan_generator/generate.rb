@@ -1,4 +1,4 @@
-module SpreadsheetLoanGenerator
+module BlendSpreadsheetLoanGenerator
   class Generate < Dry::CLI::Command
     include SpreadsheetConcern
     include CsvConcern
@@ -17,6 +17,7 @@ module SpreadsheetLoanGenerator
     option :deferred, type: :integer, default: 0, desc: 'periods with only interests paid'
     option :type, type: :string, default: 'standard', values: %w[standard linear], desc: 'type of amortization'
     option :interests_type, type: :string, default: 'simple', values: %w[simple realistic normal], desc: 'type of interests calculations'
+    option :fees_rate, type: :float, default: 0.0, required: true, desc: 'year fees rate'
     option :starting_capitalized_interests, type: :float, default: 0.0, desc: 'starting capitalized interests (if ongoing loan)'
     option :target_path, type: :string, default: './', desc: 'where to put the generated csv'
 
@@ -44,11 +45,13 @@ module SpreadsheetLoanGenerator
         deferred: options.fetch(:deferred),
         type: options.fetch(:type),
         interests_type: options.fetch(:interests_type),
-        starting_capitalized_interests: options.fetch(:starting_capitalized_interests)
+        starting_capitalized_interests: options.fetch(:starting_capitalized_interests),
+        fees_rate: options.fetch(:fees_rate)
       )
 
       spreadsheet = session.create_spreadsheet(loan.name)
-      worksheet = spreadsheet.worksheets.first
+      worksheet = spreadsheet.add_worksheet(loan.type, loan.duration + 2, columns.count + 1, index: 0)
+
       @formula = Formula.new(loan: loan)
 
       apply_formulas(worksheet: worksheet)
@@ -60,6 +63,9 @@ module SpreadsheetLoanGenerator
       generate_csv(worksheet: worksheet, target_path: options.fetch(:target_path))
 
       puts worksheet.human_url
+    rescue => e
+      require 'pry'
+      binding.pry
     end
   end
 end

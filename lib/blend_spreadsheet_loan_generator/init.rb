@@ -1,4 +1,4 @@
-module SpreadsheetLoanGenerator
+module BlendSpreadsheetLoanGenerator
   class Init < Dry::CLI::Command
 
     argument :client_id, type: :string, required: true, desc: 'GCP client_id'

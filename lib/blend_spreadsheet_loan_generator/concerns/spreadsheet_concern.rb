@@ -1,4 +1,4 @@
-module SpreadsheetLoanGenerator
+module BlendSpreadsheetLoanGenerator
   module SpreadsheetConcern
     extend ActiveSupport::Concern
 
@@ -26,6 +26,12 @@ module SpreadsheetLoanGenerator
           period_reimbursed_capitalized_interests
           period_leap_days
           period_non_leap_days
+          period_fees
+          period_calculated_fees
+          capitalized_fees_start
+          capitalized_fees_end
+          period_reimbursed_capitalized_fees
+          period_fees_rate
         ]
       end
 
@@ -42,6 +48,10 @@ module SpreadsheetLoanGenerator
           capitalized_interests_start
           capitalized_interests_end
           period_reimbursed_capitalized_interests
+          period_fees
+          capitalized_fees_start
+          capitalized_fees_end
+          period_reimbursed_capitalized_fees
         ]
       end
 
@@ -53,6 +63,8 @@ module SpreadsheetLoanGenerator
           delta
           accrued_delta
           period_rate
+          period_calculated_fees
+          period_fees_rate
         ]
       end
 

@@ -1,4 +1,4 @@
-module SpreadsheetLoanGenerator
+module BlendSpreadsheetLoanGenerator
   module CsvConcern
     extend ActiveSupport::Concern
 

@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in spreadsheet_loan_generator.gemspec
+# Specify your gem's dependencies in blend_spreadsheet_loan_generator.gemspec
 gemspec
 
 gem 'rake', '~> 12.0'

@@ -1,4 +1,4 @@
-module SpreadsheetLoanGenerator
+module BlendSpreadsheetLoanGenerator
   class Loan
     attr_accessor :amount,
                   :duration,
@@ -9,7 +9,8 @@ module SpreadsheetLoanGenerator
                   :deferred,
                   :type,
                   :interests_type,
-                  :starting_capitalized_interests
+                  :starting_capitalized_interests,
+                  :fees_rate
 
     def initialize(
       amount:,
@@ -21,7 +22,8 @@ module SpreadsheetLoanGenerator
       deferred:,
       type:,
       interests_type:,
-      starting_capitalized_interests:)
+      starting_capitalized_interests:,
+      fees_rate:)
       @amount = amount.to_f
       @duration = duration.to_i
       @period_duration = period_duration.to_i
@@ -31,7 +33,7 @@ module SpreadsheetLoanGenerator
       @deferred = deferred.to_i
       @type = type
       @interests_type = interests_type
-
+      @fees_rate = fees_rate.to_f
       @starting_capitalized_interests = starting_capitalized_interests.to_f
 
       print_validation_errors
@@ -46,11 +48,11 @@ module SpreadsheetLoanGenerator
     end
 
     def loan_type_formula
-      "SpreadsheetLoanGenerator::#{type.classify}".constantize.new(loan: self)
+      "BlendSpreadsheetLoanGenerator::#{type.classify}".constantize.new(loan: self)
     end
 
     def interests_formula
-      "SpreadsheetLoanGenerator::#{interests_type.classify}Interests".constantize.new(loan: self)
+      "BlendSpreadsheetLoanGenerator::#{interests_type.classify}Interests".constantize.new(loan: self)
     end
 
     def name_type

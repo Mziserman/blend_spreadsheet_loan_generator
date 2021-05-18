@@ -1,5 +1,5 @@
 require "bundler/setup"
-require "spreadsheet_loan_generator"
+require "blend_spreadsheet_loan_generator"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

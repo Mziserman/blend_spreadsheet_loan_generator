@@ -1,13 +1,13 @@
-require_relative 'lib/spreadsheet_loan_generator/version'
+require_relative 'lib/blend_spreadsheet_loan_generator/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'spreadsheet_loan_generator'
-  spec.version       = SpreadsheetLoanGenerator::VERSION
+  spec.name          = 'blend_spreadsheet_loan_generator'
+  spec.version       = BlendSpreadsheetLoanGenerator::VERSION
   spec.authors       = ['MZiserman']
   spec.email         = ['martinziserman@gmail.com']
 
   spec.summary       = 'Generate spreadsheets amortization schedules from the command line'
-  spec.homepage      = 'https://github.com/CapSens/spreadsheet_loan_generator'
+  spec.homepage      = 'https://github.com/CapSens/blend_spreadsheet_loan_generator'
   spec.required_ruby_version = Gem::Requirement.new('>= 2.3.0')
 
   spec.metadata['allowed_push_host'] = 'https://rubygems.org'
@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   end
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
-  spec.executables << 'slg'
+  spec.executables << 'bslg'
 
   spec.require_paths = ['lib']
 

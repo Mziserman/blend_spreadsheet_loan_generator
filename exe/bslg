@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/blend_spreadsheet_loan_generator'
+
+Dry::CLI.new(BlendSpreadsheetLoanGenerator).call
