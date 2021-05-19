@@ -24,6 +24,12 @@ module BlendSpreadsheetLoanGenerator
 
     def call(amount:, duration:, rate:, **options)
       begin
+        # session = GoogleDrive::Session.from_service_account_key(
+        #   File.join(
+        #     ENV['SPREADSHEET_LOAN_GENERATOR_DIR'],
+        #     'loan-spreadsheet-generator-6c27a42bdda7.json'
+        #   )
+        # )
         session = GoogleDrive::Session.from_config(
           File.join(ENV['SPREADSHEET_LOAN_GENERATOR_DIR'], 'config.json')
         )

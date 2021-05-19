@@ -1,5 +1,5 @@
 module BlendSpreadsheetLoanGenerator
-  class Restructure < Dry::CLI::Command
+  class EarlyRepay < Dry::CLI::Command
     include SpreadsheetConcern
     include CsvConcern
 
@@ -8,8 +8,8 @@ module BlendSpreadsheetLoanGenerator
     desc "Generate spreadsheet"
 
     argument :last_paid_term, type: :integer, required: true, desc: 'last paid term, restructuration starts at last_paid + 1'
+    argument :amount_paid, type: :integer, required: true, desc: 'amount early repaid'
     argument :from_path, type: :string, required: true, desc: 'csv to restructure'
-    argument :duration, type: :float, required: true, desc: 'duration post restructuration'
     argument :rate, type: :float, required: true, desc: 'year rate post restructuration'
 
     option :period_duration, type: :integer, default: 1, desc: 'duration of a period in months'
@@ -23,7 +23,7 @@ module BlendSpreadsheetLoanGenerator
     option :starting_capitalized_fees, type: :float, default: 0.0, desc: 'starting capitalized fees (if ongoing loan)'
     option :target_path, type: :string, default: './', desc: 'where to put the generated csv'
 
-    def call(last_paid_term:, from_path:, duration:, rate:, **options)
+    def call(last_paid_term:, amount_paid:, from_path:, rate:, **options)
       begin
         session = GoogleDrive::Session.from_config(
           File.join(ENV['SPREADSHEET_LOAN_GENERATOR_DIR'], 'config.json')
@@ -43,16 +43,30 @@ module BlendSpreadsheetLoanGenerator
 
       last_paid_line = values.index { |term| term[:index] == last_paid_term.to_i }
 
-      starting_capitalized_interests = (
+      total_to_be_paid = (
+        values[last_paid_line + 1][:remaining_capital_start] +
         values[last_paid_line + 1][:capitalized_interests_start] +
-        values[last_paid_line + 1][:period_calculated_interests]
-      )
-      starting_capitalized_fees = (
-        values[last_paid_line + 1][:capitalized_fees_start] +
-        values[last_paid_line + 1][:period_calculated_fees]
+        values[last_paid_line + 1][:capitalized_fees_start]
       )
 
+      amount_paid = amount_paid.to_f
+      duration = (
+        if total_to_be_paid == amount_paid
+          1
+        else
+          values.last[:index] - values[last_paid_line][:index]
+        end
+      )
+
+      starting_capitalized_interests = 0.0
+      starting_capitalized_fees = 0.0
+
       due_on = values[last_paid_line + 1][:due_on] + 1.month
+
+      capital_paid = amount_paid.to_f - (
+        values[last_paid_line + 1][:capitalized_interests_start] +
+        values[last_paid_line + 1][:capitalized_fees_start]
+      )
 
       @loan = Loan.new(
         amount: values[last_paid_line][:remaining_capital_end],
@@ -75,6 +89,37 @@ module BlendSpreadsheetLoanGenerator
       @formula = Formula.new(loan: loan)
 
       apply_formulas(worksheet: worksheet)
+
+      worksheet[2, columns.index('remaining_capital_start') + 1] =
+        excel_float(values[last_paid_line][:remaining_capital_end])
+
+      worksheet[2, columns.index('remaining_capital_end') + 1] =
+        excel_float(values[last_paid_line][:remaining_capital_end] - capital_paid)
+
+      worksheet[2, columns.index('period_interests') + 1] =
+        excel_float(values[last_paid_line + 1][:period_interests])
+
+      worksheet[2, columns.index('period_theoric_interests') + 1] =
+        excel_float(values[last_paid_line + 1][:period_interests])
+
+      worksheet[2, columns.index('period_fees') + 1] =
+        excel_float(values[last_paid_line + 1][:period_fees])
+
+      worksheet[2, columns.index('period_capital') + 1] =
+        excel_float(capital_paid)
+
+      worksheet[2, columns.index('capitalized_interests_start') + 1] =
+        excel_float(values[last_paid_line + 1][:capitalized_interests_start])
+
+      worksheet[2, columns.index('capitalized_fees_start') + 1] =
+        excel_float(values[last_paid_line + 1][:capitalized_fees_start])
+
+      worksheet[2, columns.index('period_reimbursed_capitalized_interests') + 1] =
+        excel_float(values[last_paid_line + 1][:capitalized_interests_start])
+
+      worksheet[2, columns.index('period_reimbursed_capitalized_fees') + 1] =
+        excel_float(values[last_paid_line + 1][:capitalized_fees_start])
+
       apply_formats(worksheet: worksheet)
 
       worksheet.save

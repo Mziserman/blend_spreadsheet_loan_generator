@@ -26,10 +26,12 @@ module BlendSpreadsheetLoanGenerator
   autoload :Version, 'blend_spreadsheet_loan_generator/version'
   autoload :Generate, 'blend_spreadsheet_loan_generator/generate'
   autoload :Restructure, 'blend_spreadsheet_loan_generator/restructure'
+  autoload :EarlyRepay, 'blend_spreadsheet_loan_generator/early_repay'
   autoload :Init, 'blend_spreadsheet_loan_generator/init'
 
   register 'init', Init, aliases: ['i', '-i', '--init']
   register 'version', Version, aliases: ['v', '-v', '--version']
   register 'generate', Generate, aliases: ['g', '-g', '--generate']
   register 'restructure', Restructure, aliases: ['r', '-r', '--restructure']
+  register 'early_repay', EarlyRepay, aliases: ['er', '-er', '--early_repay']
 end
