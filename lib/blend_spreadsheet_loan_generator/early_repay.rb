@@ -94,25 +94,29 @@ module BlendSpreadsheetLoanGenerator
         excel_float(values[last_paid_line][:remaining_capital_end])
 
       worksheet[2, columns.index('remaining_capital_end') + 1] =
-        excel_float(values[last_paid_line][:remaining_capital_end] - capital_paid)
+        "=#{excel_float(values[last_paid_line][:remaining_capital_end])} - #{period_capital(2)}"
 
       worksheet[2, columns.index('period_interests') + 1] =
-        excel_float(values[last_paid_line + 1][:period_interests])
+        "=ARRONDI(#{period_theoric_interests(2)}; 2)"
 
       worksheet[2, columns.index('period_theoric_interests') + 1] =
-        excel_float(values[last_paid_line + 1][:period_interests])
+        "=#{excel_float(values[last_paid_line + 1][:period_calculated_interests])}"
 
       worksheet[2, columns.index('period_fees') + 1] =
-        excel_float(values[last_paid_line + 1][:period_fees])
+        "=#{excel_float(values[last_paid_line + 1][:period_calculated_fees])}"
 
       worksheet[2, columns.index('period_capital') + 1] =
-        excel_float(capital_paid)
+        "=#{excel_float(capital_paid)} - #{period_interests(2)} - #{period_fees(2)}"
 
       worksheet[2, columns.index('capitalized_interests_start') + 1] =
         excel_float(values[last_paid_line + 1][:capitalized_interests_start])
 
       worksheet[2, columns.index('capitalized_fees_start') + 1] =
         excel_float(values[last_paid_line + 1][:capitalized_fees_start])
+
+      worksheet[2, columns.index('capitalized_interests_end') + 1] = excel_float(0.0)
+
+      worksheet[2, columns.index('capitalized_fees_end') + 1] = excel_float(0.0)
 
       worksheet[2, columns.index('period_reimbursed_capitalized_interests') + 1] =
         excel_float(values[last_paid_line + 1][:capitalized_interests_start])
