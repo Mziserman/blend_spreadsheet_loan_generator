@@ -12,6 +12,7 @@ module BlendSpreadsheetLoanGenerator
     argument :from_path, type: :string, required: true, desc: 'csv to restructure'
     argument :rate, type: :float, required: true, desc: 'year rate post restructuration'
 
+    option :duration, type: :integer, desc: 'duration'
     option :period_duration, type: :integer, default: 1, desc: 'duration of a period in months'
     option :due_on, type: :date, default: Date.today, desc: 'date of the pay day of the first period DD/MM/YYYY'
     option :deferred_and_capitalized, type: :integer, default: 0, desc: 'periods with no capital or interests paid'
@@ -54,7 +55,7 @@ module BlendSpreadsheetLoanGenerator
         if total_to_be_paid == amount_paid
           1
         else
-          values.last[:index] - values[last_paid_line][:index]
+          options.fetch(:duration, values.last[:index] - values[last_paid_line][:index])
         end
       )
 
