@@ -12,6 +12,7 @@ module BlendSpreadsheetLoanGenerator
     argument :from_path, type: :string, required: true, desc: 'csv to restructure'
     argument :rate, type: :float, required: true, desc: 'year rate post restructuration'
 
+    option :guaranteed_terms, type: :integer, default: 0
     option :duration, type: :integer, desc: 'duration'
     option :period_duration, type: :integer, default: 1, desc: 'duration of a period in months'
     option :due_on, type: :date, default: Date.today, desc: 'date of the pay day of the first period DD/MM/YYYY'
@@ -43,6 +44,14 @@ module BlendSpreadsheetLoanGenerator
       values.map! { |r| set_types([columns, r].transpose.to_h.with_indifferent_access) }
 
       last_paid_line = values.index { |term| term[:index] == last_paid_term.to_i }
+      guaranteed_line = values.index { |term| term[:index] == options.fetch(:guaranteed_terms, -1).to_i } || nil
+      total_guaranteed_interests = (
+        if guaranteed_line.present? && guaranteed_line > last_paid_line
+          values[(last_paid_line + 1)..guaranteed_line].sum { |value| value[:period_calculated_interests] }
+        else
+          0
+        end
+      )
 
       total_to_be_paid = (
         values[last_paid_line + 1][:remaining_capital_start] +
@@ -59,15 +68,17 @@ module BlendSpreadsheetLoanGenerator
         end
       )
 
-      starting_capitalized_interests = 0.0
-      starting_capitalized_fees = 0.0
-
       due_on = values[last_paid_line + 1][:due_on] + 1.month
 
       capital_paid = amount_paid.to_f - (
         values[last_paid_line + 1][:capitalized_interests_start] +
         values[last_paid_line + 1][:capitalized_fees_start]
       )
+      guaranteed_interests_paid = (
+        (capital_paid.to_f / values[last_paid_line + 1][:remaining_capital_start]) *
+        total_guaranteed_interests
+      )
+      capital_paid -= guaranteed_interests_paid
 
       @loan = Loan.new(
         amount: values[last_paid_line][:remaining_capital_end],
@@ -80,8 +91,8 @@ module BlendSpreadsheetLoanGenerator
         deferred: options.fetch(:deferred),
         type: options.fetch(:type),
         interests_type: options.fetch(:interests_type),
-        starting_capitalized_interests: starting_capitalized_interests,
-        starting_capitalized_fees: starting_capitalized_fees
+        starting_capitalized_interests: 0.0,
+        starting_capitalized_fees: 0.0
       )
 
       spreadsheet = session.create_spreadsheet(loan.name)
@@ -125,6 +136,9 @@ module BlendSpreadsheetLoanGenerator
       worksheet[2, columns.index('period_reimbursed_capitalized_fees') + 1] =
         excel_float(values[last_paid_line + 1][:capitalized_fees_start])
 
+      worksheet[2, columns.index('period_reimbursed_guaranteed_interests') + 1] =
+        excel_float(guaranteed_interests_paid)
+
       apply_formats(worksheet: worksheet)
 
       worksheet.save
@@ -164,6 +178,7 @@ module BlendSpreadsheetLoanGenerator
       h[:capitalized_fees_end] = h[:capitalized_fees_end].to_f
       h[:period_reimbursed_capitalized_fees] = h[:period_reimbursed_capitalized_fees].to_f
       h[:period_fees_rate] = h[:period_fees_rate].to_f
+      h[:period_reimbursed_guaranteed_interests] = h[:period_reimbursed_guaranteed_interests].to_f
 
       h
     end

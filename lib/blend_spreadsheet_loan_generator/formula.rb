@@ -42,7 +42,9 @@ module BlendSpreadsheetLoanGenerator
         '+',
         period_interests(line),
         '+',
-        period_reimbursed_capitalized_interests(line)
+        period_reimbursed_capitalized_interests(line),
+        '+',
+        period_reimbursed_guaranteed_interests(line)
       ].join(' ')
       "=ARRONDI(#{total}; 2)"
     end
@@ -206,6 +208,10 @@ module BlendSpreadsheetLoanGenerator
 
     def period_fees_rate_formula(line:)
       @interests_formula.period_fees_rate_formula(line: line)
+    end
+
+    def period_reimbursed_guaranteed_interests_formula(line:)
+      excel_float(0.0)
     end
   end
 end

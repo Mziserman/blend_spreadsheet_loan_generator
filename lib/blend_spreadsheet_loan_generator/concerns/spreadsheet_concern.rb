@@ -32,6 +32,7 @@ module BlendSpreadsheetLoanGenerator
           capitalized_fees_end
           period_reimbursed_capitalized_fees
           period_fees_rate
+          period_reimbursed_guaranteed_interests
         ]
       end
 
@@ -52,6 +53,7 @@ module BlendSpreadsheetLoanGenerator
           capitalized_fees_start
           capitalized_fees_end
           period_reimbursed_capitalized_fees
+          period_reimbursed_guaranteed_interests
         ]
       end
 
