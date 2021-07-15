@@ -13,6 +13,7 @@ module BlendSpreadsheetLoanGenerator
     argument :rate, type: :float, required: true, desc: 'year rate post restructuration'
 
     option :guaranteed_terms, type: :integer, default: 0
+    option :ratio, type: :float
     option :duration, type: :integer, desc: 'duration'
     option :period_duration, type: :integer, default: 1, desc: 'duration of a period in months'
     option :due_on, type: :date, default: Date.today, desc: 'date of the pay day of the first period DD/MM/YYYY'
@@ -43,7 +44,7 @@ module BlendSpreadsheetLoanGenerator
       values = f.to_a
       values.map! { |r| set_types([columns, r].transpose.to_h.with_indifferent_access) }
 
-      last_paid_line = values.index { |term| term[:index] == last_paid_term.to_i }
+      last_paid_line = values.index { |term| term[:index] == last_paid_term.to_i } || -1
       guaranteed_line = values.index { |term| term[:index] == options.fetch(:guaranteed_terms, -1).to_i } || nil
       total_guaranteed_interests = (
         if guaranteed_line.present? && guaranteed_line > last_paid_line
@@ -64,7 +65,14 @@ module BlendSpreadsheetLoanGenerator
         if total_to_be_paid == amount_paid
           1
         else
-          options.fetch(:duration, values.last[:index] - values[last_paid_line][:index])
+          options.fetch(
+            :duration,
+            if last_paid_line == -1
+              values.last[:index]
+            else
+              values.last[:index] - values[last_paid_line][:index]
+            end
+          )
         end
       )
 
@@ -72,16 +80,26 @@ module BlendSpreadsheetLoanGenerator
 
       capital_paid = amount_paid.to_f - (
         values[last_paid_line + 1][:capitalized_interests_start] +
-        values[last_paid_line + 1][:capitalized_fees_start]
+        values[last_paid_line + 1][:capitalized_fees_start] +
+        values[last_paid_line + 1][:period_calculated_interests] +
+        values[last_paid_line + 1][:period_calculated_fees]
       )
+
+      ratio = options.fetch(:ratio, (capital_paid.to_f / values[last_paid_line + 1][:remaining_capital_start])).to_f
       guaranteed_interests_paid = (
-        (capital_paid.to_f / values[last_paid_line + 1][:remaining_capital_start]) *
-        total_guaranteed_interests
+        ratio * total_guaranteed_interests
       )
-      capital_paid -= guaranteed_interests_paid
+
+      amount = (
+        if last_paid_line == -1
+          values[0][:remaining_capital_start]
+        else
+          values[last_paid_line][:remaining_capital_end]
+        end
+      )
 
       @loan = Loan.new(
-        amount: values[last_paid_line][:remaining_capital_end],
+        amount: amount,
         duration: duration,
         rate: rate,
         fees_rate: options.fetch(:fees_rate),
@@ -103,10 +121,10 @@ module BlendSpreadsheetLoanGenerator
       apply_formulas(worksheet: worksheet)
 
       worksheet[2, columns.index('remaining_capital_start') + 1] =
-        excel_float(values[last_paid_line][:remaining_capital_end])
+        excel_float(values[last_paid_line + 1][:remaining_capital_start])
 
       worksheet[2, columns.index('remaining_capital_end') + 1] =
-        "=#{excel_float(values[last_paid_line][:remaining_capital_end])} - #{period_capital(2)}"
+        "=#{excel_float(values[last_paid_line + 1][:remaining_capital_start])} - #{period_capital(2)}"
 
       worksheet[2, columns.index('period_interests') + 1] =
         "=ARRONDI(#{period_theoric_interests(2)}; 2)"
@@ -117,8 +135,7 @@ module BlendSpreadsheetLoanGenerator
       worksheet[2, columns.index('period_fees') + 1] =
         "=#{excel_float(values[last_paid_line + 1][:period_calculated_fees])}"
 
-      worksheet[2, columns.index('period_capital') + 1] =
-        "=#{excel_float(capital_paid)} - #{period_interests(2)} - #{period_fees(2)}"
+      worksheet[2, columns.index('period_capital') + 1] = "=#{excel_float(capital_paid)}"
 
       worksheet[2, columns.index('capitalized_interests_start') + 1] =
         excel_float(values[last_paid_line + 1][:capitalized_interests_start])
