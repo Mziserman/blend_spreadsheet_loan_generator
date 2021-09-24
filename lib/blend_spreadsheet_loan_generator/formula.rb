@@ -213,5 +213,9 @@ module BlendSpreadsheetLoanGenerator
     def period_reimbursed_guaranteed_interests_formula(line:)
       excel_float(0.0)
     end
+
+    def period_reimbursed_guaranteed_fees_formula(line:)
+      excel_float(0.0)
+    end
   end
 end

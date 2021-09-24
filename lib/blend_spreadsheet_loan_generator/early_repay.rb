@@ -46,13 +46,14 @@ module BlendSpreadsheetLoanGenerator
 
       last_paid_line = values.index { |term| term[:index] == last_paid_term.to_i } || -1
       guaranteed_line = values.index { |term| term[:index] == options.fetch(:guaranteed_terms, -1).to_i } || nil
-      total_guaranteed_interests = (
-        if guaranteed_line.present? && guaranteed_line > last_paid_line
-          values[(last_paid_line + 1)..guaranteed_line].sum { |value| value[:period_calculated_interests] }
-        else
-          0
-        end
-      )
+
+      if guaranteed_line.present? && guaranteed_line >= (last_paid_line + 2)
+        total_guaranteed_interests = values[(last_paid_line + 2)..guaranteed_line].sum { |value| value[:period_calculated_interests] }
+        total_guaranteed_fees = values[(last_paid_line + 2)..guaranteed_line].sum { |value| value[:period_calculated_fees] }
+      else
+        total_guaranteed_interests = 0
+        total_guaranteed_fees = 0
+      end
 
       total_to_be_paid = (
         values[last_paid_line + 1][:remaining_capital_start] +
@@ -84,11 +85,19 @@ module BlendSpreadsheetLoanGenerator
         values[last_paid_line + 1][:period_calculated_interests] +
         values[last_paid_line + 1][:period_calculated_fees]
       )
-
-      ratio = options.fetch(:ratio, (capital_paid.to_f / values[last_paid_line + 1][:remaining_capital_start])).to_f
-      guaranteed_interests_paid = (
-        ratio * total_guaranteed_interests
+      capital_paid_for_ratio = amount_paid.to_f - (
+        values[last_paid_line + 1][:capitalized_fees_start] +
+        values[last_paid_line + 1][:period_calculated_fees]
       )
+      remaining_capital_for_ratio = (
+        values[last_paid_line + 1][:remaining_capital_start] +
+        values[last_paid_line + 1][:capitalized_interests_start] +
+        values[last_paid_line + 1][:period_calculated_interests]
+      )
+
+      ratio = options.fetch(:ratio, capital_paid_for_ratio.to_f / remaining_capital_for_ratio).to_f
+      guaranteed_interests_paid = ratio * total_guaranteed_interests
+      guaranteed_fees_paid = ratio * total_guaranteed_fees
 
       amount = (
         if last_paid_line == -1
@@ -156,6 +165,9 @@ module BlendSpreadsheetLoanGenerator
       worksheet[2, columns.index('period_reimbursed_guaranteed_interests') + 1] =
         excel_float(guaranteed_interests_paid)
 
+      worksheet[2, columns.index('period_reimbursed_guaranteed_fees') + 1] =
+        excel_float(guaranteed_fees_paid)
+
       apply_formats(worksheet: worksheet)
 
       worksheet.save
@@ -196,6 +208,7 @@ module BlendSpreadsheetLoanGenerator
       h[:period_reimbursed_capitalized_fees] = h[:period_reimbursed_capitalized_fees].to_f
       h[:period_fees_rate] = h[:period_fees_rate].to_f
       h[:period_reimbursed_guaranteed_interests] = h[:period_reimbursed_guaranteed_interests].to_f
+      h[:period_reimbursed_guaranteed_fees] = h[:period_reimbursed_guaranteed_fees].to_f
 
       h
     end
