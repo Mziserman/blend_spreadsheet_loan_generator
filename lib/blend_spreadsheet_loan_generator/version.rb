@@ -1,7 +1,7 @@
 require 'dry/cli'
 
 module BlendSpreadsheetLoanGenerator
-  VERSION = '0.1.31'.freeze
+  VERSION = '0.1.32'.freeze
 
   class Version < Dry::CLI::Command
     desc 'Print version'

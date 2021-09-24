@@ -193,7 +193,7 @@ module BlendSpreadsheetLoanGenerator
       if term <= loan.deferred_and_capitalized
         with_fees = "#{remaining_capital_start(line)} * (1 + #{period_fees_rate(line)} + #{period_rate(line)})^#{index(line)}"
         without_fees = "#{remaining_capital_start(line)} * (1 + #{period_rate(line)})^#{index(line)}"
-        "=ARRONDI(#{with_fees} - #{without_fees})"
+        "=ARRONDI(#{with_fees} - #{without_fees}; 2)"
       else
         "=ARRONDI(#{capitalized_fees_start(line)} - #{period_reimbursed_capitalized_fees(line)}; 2)"
       end
