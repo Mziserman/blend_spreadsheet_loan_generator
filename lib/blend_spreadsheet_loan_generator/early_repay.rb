@@ -80,19 +80,18 @@ module BlendSpreadsheetLoanGenerator
       due_on = values[last_paid_line + 1][:due_on] + 1.month
 
       capital_paid = amount_paid.to_f - (
-        values[last_paid_line + 1][:capitalized_interests_start] +
-        values[last_paid_line + 1][:capitalized_fees_start] +
-        values[last_paid_line + 1][:period_calculated_interests] +
-        values[last_paid_line + 1][:period_calculated_fees]
+        values[last_paid_line + 1][:period_interests] +
+        values[last_paid_line + 1][:period_fees] +
+        values[last_paid_line + 1][:period_reimbursed_capitalized_interests] +
+        values[last_paid_line + 1][:period_reimbursed_capitalized_fees]
       )
       capital_paid_for_ratio = amount_paid.to_f - (
-        values[last_paid_line + 1][:capitalized_fees_start] +
-        values[last_paid_line + 1][:period_calculated_fees]
+        values[last_paid_line + 1][:period_interests] +
+        values[last_paid_line + 1][:period_fees]
       )
       remaining_capital_for_ratio = (
-        values[last_paid_line + 1][:remaining_capital_start] +
-        values[last_paid_line + 1][:capitalized_interests_start] +
-        values[last_paid_line + 1][:period_calculated_interests]
+        values[last_paid_line + 1][:remaining_capital_end] +
+        values[last_paid_line + 1][:capitalized_interests_end]
       )
 
       ratio = options.fetch(:ratio, capital_paid_for_ratio.to_f / remaining_capital_for_ratio).to_f
@@ -127,7 +126,7 @@ module BlendSpreadsheetLoanGenerator
 
       @formula = Formula.new(loan: loan)
 
-      apply_formulas(worksheet: worksheet)
+      apply_formulas(worksheet: worksheet, first_term_skip: true)
 
       worksheet[2, columns.index('remaining_capital_start') + 1] =
         excel_float(values[last_paid_line + 1][:remaining_capital_start])
@@ -167,6 +166,10 @@ module BlendSpreadsheetLoanGenerator
 
       worksheet[2, columns.index('period_reimbursed_guaranteed_fees') + 1] =
         excel_float(guaranteed_fees_paid)
+
+      worksheet[2, columns.index('period_calculated_fees') + 1] =
+        excel_float(0.0)
+
 
       apply_formats(worksheet: worksheet)
 

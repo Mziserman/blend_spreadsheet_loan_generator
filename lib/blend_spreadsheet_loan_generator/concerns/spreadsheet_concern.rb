@@ -87,13 +87,24 @@ module BlendSpreadsheetLoanGenerator
         end
       end
 
-      def apply_formulas(worksheet:)
+      def first_term_skip_columns
+        %w[
+          period_calculated_fees
+          capitalized_fees_end
+        ]
+      end
+
+      def apply_formulas(worksheet:, first_term_skip: false)
         columns.each.with_index do |title, column|
           worksheet[1, column + 1] = title
         end
         loan.duration.times do |line|
           columns.each.with_index do |title, column|
-            worksheet[line + 2, column + 1] = @formula.send("#{title}_formula", line: line + 2)
+            if first_term_skip && title.in?(first_term_skip_columns)
+              worksheet[line + 2, column + 1] = @formula.send("#{title}_formula", line: line + 2, first_term_skip: true)
+            else
+              worksheet[line + 2, column + 1] = @formula.send("#{title}_formula", line: line + 2)
+            end
           end
         end
       end

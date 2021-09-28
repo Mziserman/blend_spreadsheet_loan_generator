@@ -168,18 +168,35 @@ module BlendSpreadsheetLoanGenerator
       end
     end
 
-    def period_calculated_fees_formula(line:)
-      amount_to_capitalize = [
-        '(',
-        remaining_capital_start(line),
-        '+',
-        capitalized_interests_start(line),
-        '+',
-        capitalized_fees_start(line),
-        ')'
-      ].join(' ')
+    def period_calculated_fees_formula(line:, first_term_skip: false)
+      term = line - 1
+      return excel_float(0.0) if first_term_skip && term == 1
+      if loan.bullet_term?(term)
+        index = first_term_skip ? index(line - 1) : index(line)
 
-      "=#{amount_to_capitalize} * #{period_fees_rate(line)}"
+        with_fees = "#{remaining_capital_start(line)} * (1 + #{period_fees_rate(line)} + #{period_rate(line)})^#{index}"
+        without_fees = "#{remaining_capital_start(line)} * (1 + #{period_rate(line)})^#{index}"
+        current = "#{with_fees} - #{without_fees}"
+
+        "=#{current} - #{capitalized_fees_start(line)}"
+      elsif loan.deferred_and_capitalized > 0 && term > loan.deferred_and_capitalized
+        index = first_term_skip ? loan.deferred_and_capitalized - 1 : loan.deferred_and_capitalized
+
+        with_fees = "#{remaining_capital_start(line)} * (1 + #{period_rate(line)} + #{period_fees_rate(line)})^#{index} * (#{period_rate(line)} + #{period_fees_rate(line)})"
+        without_fees = "#{remaining_capital_start(line)} * (1 + #{period_rate(line)})^#{index} * #{period_rate(line)}"
+
+        "=#{with_fees} - #{without_fees}"
+      else
+        amount_to_capitalize = [
+          '(',
+          remaining_capital_start(line),
+          '+',
+          capitalized_interests_start(line),
+          ')'
+        ].join(' ')
+
+        "=#{amount_to_capitalize} * #{period_fees_rate(line)}"
+      end
     end
 
     def capitalized_fees_start_formula(line:)
@@ -188,11 +205,13 @@ module BlendSpreadsheetLoanGenerator
       "=ARRONDI(#{capitalized_fees_end(line - 1)}; 2)"
     end
 
-    def capitalized_fees_end_formula(line:)
+    def capitalized_fees_end_formula(line:, first_term_skip: false)
       term = line - 1
+      return excel_float(0.0) if first_term_skip && term == 1
       if term <= loan.deferred_and_capitalized
-        with_fees = "#{remaining_capital_start(line)} * (1 + #{period_fees_rate(line)} + #{period_rate(line)})^#{index(line)}"
-        without_fees = "#{remaining_capital_start(line)} * (1 + #{period_rate(line)})^#{index(line)}"
+        index = first_term_skip ? index(line - 1) : index(line)
+        with_fees = "#{remaining_capital_start(line)} * (1 + #{period_fees_rate(line)} + #{period_rate(line)})^#{index}"
+        without_fees = "#{remaining_capital_start(line)} * (1 + #{period_rate(line)})^#{index}"
         "=ARRONDI(#{with_fees} - #{without_fees}; 2)"
       else
         "=ARRONDI(#{capitalized_fees_start(line)} - #{period_reimbursed_capitalized_fees(line)}; 2)"

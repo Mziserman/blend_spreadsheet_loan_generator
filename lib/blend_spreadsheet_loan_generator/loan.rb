@@ -112,6 +112,10 @@ module BlendSpreadsheetLoanGenerator
       fully_deferred? && deferred_and_capitalized == total_deferred_duration
     end
 
+    def bullet_term?(term)
+      deferred_and_capitalized >= term || bullet? # for last term
+    end
+
     def in_fine?
       fully_deferred? && deferred == total_deferred_duration
     end
