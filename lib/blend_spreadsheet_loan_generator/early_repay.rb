@@ -82,15 +82,15 @@ module BlendSpreadsheetLoanGenerator
       capital_paid = amount_paid.to_f - (
         values[last_paid_line + 1][:period_interests] +
         values[last_paid_line + 1][:period_fees] +
-        values[last_paid_line + 1][:period_reimbursed_capitalized_interests] +
-        values[last_paid_line + 1][:period_reimbursed_capitalized_fees]
+        values[last_paid_line + 1][:capitalized_interests_end] +
+        values[last_paid_line + 1][:capitalized_fees_end]
       )
       capital_paid_for_ratio = amount_paid.to_f - (
         values[last_paid_line + 1][:period_interests] +
         values[last_paid_line + 1][:period_fees]
       )
       remaining_capital_for_ratio = (
-        values[last_paid_line + 1][:remaining_capital_end] +
+        values[last_paid_line + 1][:remaining_capital_start] +
         values[last_paid_line + 1][:capitalized_interests_end]
       )
 
