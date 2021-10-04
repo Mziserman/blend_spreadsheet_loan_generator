@@ -1,6 +1,6 @@
-RSpec.describe SpreadsheetLoanGenerator::SpreadsheetConcern do
+RSpec.describe BlendSpreadsheetLoanGenerator::SpreadsheetConcern do
   klass = Class.new do
-    include SpreadsheetLoanGenerator::SpreadsheetConcern
+    include BlendSpreadsheetLoanGenerator::SpreadsheetConcern
   end.new
 
   columns = klass.columns
